@@ -14,11 +14,14 @@ class PosController extends Controller
 {
     public function index()
     {
-        $products = Product::with('category')
-            ->orderBy('name')
+        $categories = \App\Models\Category::withCount('products')->get();
+        $products = Product::with('category')->orderBy('name')->get();
+        $recentTransactions = Transaction::withCount('details')
+            ->latest()
+            ->take(4)
             ->get();
 
-        return view('pos.index', compact('products'));
+        return view('pos.index', compact('categories', 'products', 'recentTransactions'));
     }
 
     public function store(Request $request)
