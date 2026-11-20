@@ -57,6 +57,15 @@
                 <p class="text-xs text-slate-500">Pantau performa transaksi kasir dan ketersediaan stok secara langsung.</p>
             </div>
             <div class="flex items-center space-x-2.5">
+                @if(Auth::user()->role === 'admin')
+                    <a href="{{ route('admin.inventory.restock') }}"
+                       class="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs sm:text-sm shadow-sm shadow-amber-500/20 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                        </svg>
+                        <span>Restock &amp; Penyesuaian</span>
+                    </a>
+                @endif
                 <a href="{{ route('pos.index') }}"
                    class="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm shadow-sm shadow-indigo-600/20 transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -266,6 +275,19 @@
                         </div>
                     @endforelse
                 </div>
+
+                @if(Auth::user()->role === 'admin')
+                    <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+                        <a href="{{ route('admin.inventory.restock') }}"
+                           class="text-xs font-bold text-amber-600 hover:text-amber-700">
+                            Kelola Restock &rarr;
+                        </a>
+                        <a href="{{ route('admin.inventory.logs') }}"
+                           class="text-xs font-semibold text-slate-500 hover:text-indigo-600">
+                            Riwayat Stok
+                        </a>
+                    </div>
+                @endif
             </div>
 
         </div>
