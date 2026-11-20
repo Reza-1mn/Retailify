@@ -5,68 +5,103 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Retailify') }} — Sistem Kasir &amp; Inventori</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
 
+    <!-- Anti-FOUC: Terapkan Night Mode & Warna Tema sebelum halaman dirender -->
+    <script>
+        (function() {
+            const theme = localStorage.getItem('retailify_theme') || 'light';
+            const accent = localStorage.getItem('retailify_accent') || 'indigo';
+            if (theme === 'dark') document.documentElement.classList.add('dark');
+            document.documentElement.setAttribute('data-accent', accent);
+        })();
+    </script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        @view-transition {
-            navigation: auto;
-        }
-        aside.app-sidebar {
-            view-transition-name: app-sidebar;
-        }
-        header.app-topbar {
-            view-transition-name: app-topbar;
-        }
-        main.app-main {
-            view-transition-name: app-main;
-        }
 
-        ::view-transition-old(app-main) {
-            animation: 160ms cubic-bezier(0.4, 0, 1, 1) both fadeOutSlide;
-        }
-        ::view-transition-new(app-main) {
-            animation: 240ms cubic-bezier(0, 0, 0.2, 1) 60ms both fadeInSlide;
-        }
+    <!-- Panggil CSS Modular di bawah Tailwind CDN agar override selalu menang -->
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/themes.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
 
-        @keyframes fadeOutSlide {
-            from { opacity: 1; transform: translateY(0); }
-            to   { opacity: 0; transform: translateY(-6px); }
-        }
-        @keyframes fadeInSlide {
-            from { opacity: 0; transform: translateY(8px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            -webkit-font-smoothing: antialiased;
-        }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 9999px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
-    </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased"
+<body class="bg-slate-50 text-slate-800 antialiased transition-colors duration-200"
       x-data="{
           sidebarOpen: false,
           sidebarDesktop: localStorage.getItem('retailify_sidebar') !== 'hidden',
+          darkMode: localStorage.getItem('retailify_theme') === 'dark',
+          accentColor: localStorage.getItem('retailify_accent') || 'indigo',
+          themeMenuOpen: false,
+          accents: [
+                { id: 'indigo',   name: 'Soft Indigo',    hex: '#6366f1' },
+                { id: 'sage',     name: 'Sage Emerald',   hex: '#49876b' },
+                { id: 'lavender', name: 'Dusty Lavender', hex: '#8665cf' },
+                { id: 'ocean',    name: 'Soft Ocean',     hex: '#4587b3' },
+                { id: 'rose',     name: 'Muted Rose',     hex: '#c45c76' }
+            ],
           toggleDesktopSidebar() {
               this.sidebarDesktop = !this.sidebarDesktop;
               localStorage.setItem('retailify_sidebar', this.sidebarDesktop ? 'visible' : 'hidden');
+          },
+          toggleDarkMode(event) {
+              const applyTheme = () => {
+                  this.darkMode = !this.darkMode;
+                  document.documentElement.classList.toggle('dark', this.darkMode);
+                  localStorage.setItem('retailify_theme', this.darkMode ? 'dark' : 'light');
+              };
+
+              // Gunakan View Transitions API untuk animasi lingkaran menyebar dari tombol
+              if (document.startViewTransition && event && event.clientX) {
+                  const x = event.clientX;
+                  const y = event.clientY;
+                  const endRadius = Math.hypot(
+                      Math.max(x, window.innerWidth - x),
+                      Math.max(y, window.innerHeight - y)
+                  );
+
+                  const transition = document.startViewTransition(() => {
+                      applyTheme();
+                  });
+
+                  transition.ready.then(() => {
+                      document.documentElement.animate(
+                          {
+                              clipPath: [
+                                  `circle(0px at ${x}px ${y}px)`,
+                                  `circle(${endRadius}px at ${x}px ${y}px)`
+                              ]
+                          },
+                          {
+                              duration: 450,
+                              easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+                              pseudoElement: '::view-transition-new(root)'
+                          }
+                      );
+                  });
+              } else {
+                  // Fallback animasi fade halus
+                  document.body.classList.add('theme-animating');
+                  applyTheme();
+                  setTimeout(() => document.body.classList.remove('theme-animating'), 350);
+              }
+          },
+          setAccent(id) {
+              this.accentColor = id;
+              document.documentElement.setAttribute('data-accent', id);
+              localStorage.setItem('retailify_accent', id);
           }
       }">
     <x-page-loader />
 
     <div class="min-h-screen lg:h-screen lg:overflow-hidden flex bg-slate-50">
         
-        <!-- Overlay Gelap untuk Layar Mobile saat Sidebar Dibuka -->
+        <!-- Overlay Gelap untuk Layar Mobile -->
         <div x-show="sidebarOpen" @click="sidebarOpen = false" style="display: none;"
              class="fixed inset-0 z-30 bg-slate-900/40 lg:hidden transition-opacity"></div>
 
-        <!-- SIDEBAR KIRI (Bisa di-hide/show di Desktop maupun Mobile) -->
+        <!-- SIDEBAR KIRI -->
         <aside :class="[
                    sidebarOpen ? 'translate-x-0' : '-translate-x-full',
                    sidebarDesktop ? 'lg:w-60 lg:translate-x-0' : 'lg:w-0 lg:overflow-hidden lg:border-r-0'
@@ -74,13 +109,12 @@
                class="app-sidebar fixed inset-y-0 left-0 z-40 w-60 bg-white border-r border-slate-200/80 flex flex-col justify-between transition-all duration-200 ease-in-out lg:static lg:h-screen shrink-0">
             
             <div class="w-60">
-                <!-- Logo Brand + Tombol Hide Sidebar di dalam Sidebar -->
+               <!-- Logo Brand + Tombol Hide Sidebar -->
                 <div class="h-16 px-5 flex items-center justify-between border-b border-slate-100">
                     <a href="{{ route('dashboard') }}">
-                        <x-retailify-logo variant="dark" />
+                        <x-retailify-logo />
                     </a>
 
-                    <!-- Tombol Hide untuk Desktop -->
                     <button @click="toggleDesktopSidebar()" title="Sembunyikan Sidebar"
                             class="hidden lg:inline-flex p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -88,7 +122,6 @@
                         </svg>
                     </button>
 
-                    <!-- Tombol Tutup untuk Mobile -->
                     <button @click="sidebarOpen = false" class="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -176,17 +209,15 @@
 
         <!-- KONTEN UTAMA KANAN -->
         <div class="flex-1 flex flex-col min-w-0">
-            <!-- Top Bar Header -->
-            <header class="app-topbar h-16 bg-white border-b border-slate-200/80 px-4 sm:px-6 flex items-center justify-between shrink-0">
+            <!-- Top Bar Header (Tambahkan relative z-30) -->
+            <header class="app-topbar relative z-30 h-16 bg-white border-b border-slate-200/80 px-4 sm:px-6 flex items-center justify-between shrink-0">
                 <div class="flex items-center space-x-3">
-                    <!-- Tombol Buka Sidebar di Mobile -->
                     <button @click="sidebarOpen = true" class="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition" title="Buka Menu">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
                         </svg>
                     </button>
 
-                    <!-- Tombol Toggle Show/Hide Sidebar di Desktop -->
                     <button @click="toggleDesktopSidebar()"
                             :title="sidebarDesktop ? 'Sembunyikan Sidebar' : 'Tampilkan Sidebar'"
                             class="hidden lg:inline-flex p-2 rounded-xl border border-slate-200/80 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50/50 transition">
@@ -201,22 +232,75 @@
                     @endisset
                 </div>
 
-                <!-- Info User Pojok Kanan Atas (Bisa diklik untuk Edit Profil) -->
-                <a href="{{ route('profile.edit') }}" title="Edit Profil Akun"
-                class="flex items-center space-x-3 group p-1.5 -mr-1.5 rounded-xl hover:bg-slate-100/80 transition">
-                    <div class="text-right hidden sm:block">
-                        <p class="text-sm font-bold text-slate-900 group-hover:text-indigo-600 leading-none transition">{{ Auth::user()->name }}</p>
-                        <p class="text-[11px] font-semibold text-indigo-600 uppercase mt-1">{{ Auth::user()->role }}</p>
-                    </div>
-                    @if(Auth::user()->avatar)
-                        <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}"
-                            class="w-9 h-9 rounded-full object-cover ring-2 ring-indigo-600/20 group-hover:ring-indigo-600 transition shadow-sm">
-                    @else
-                        <div class="w-9 h-9 rounded-full bg-indigo-600 group-hover:bg-indigo-700 text-white font-extrabold text-sm flex items-center justify-center shadow-sm transition">
-                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                <!-- KONTROL KANAN: Night Mode, Customizer Warna, dan Profil User -->
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    
+                    <!-- Tombol Night Mode (Bulan / Matahari) -->
+                    <button @click="toggleDarkMode($event)"
+                            :title="darkMode ? 'Beralih ke Light Mode' : 'Beralih ke Night Mode'"
+                            class="p-2 rounded-xl border border-slate-200/80 text-slate-600 hover:text-indigo-600 hover:bg-slate-100 transition active:scale-95">
+                        <!-- Ikon Bulan (Saat Light Mode) -->
+                        <svg x-show="!darkMode" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                        </svg>
+                        <!-- Ikon Matahari (Saat Night Mode) -->
+                        <svg x-show="darkMode" style="display: none;" class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                    </button>
+
+                    <!-- Tombol & Dropdown Pemilih Warna Tema -->
+                    <div class="relative" @click.outside="themeMenuOpen = false">
+                        <button @click="themeMenuOpen = !themeMenuOpen" title="Ubah Warna Tema"
+                                class="p-2 rounded-xl border border-slate-200/80 text-slate-600 hover:text-indigo-600 hover:bg-slate-100 transition flex items-center space-x-1.5">
+                            <span class="w-3.5 h-3.5 rounded-full bg-indigo-600 shadow-xs"></span>
+                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+
+                        <!-- Popover Pilihan Warna -->
+                        <div x-show="themeMenuOpen" style="display: none;" x-transition
+                            class="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-200/80 p-3 z-[999] space-y-2.5">
+                            <p class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-1">Warna Aksentuasi</p>
+                            <div class="grid grid-cols-5 gap-1.5 px-1">
+                                <template x-for="item in accents" :key="item.id">
+                                    <button type="button" @click="setAccent(item.id)" :title="item.name"
+                                            :style="`background-color: ${item.hex}`"
+                                            :class="accentColor === item.id ? 'ring-2 ring-offset-2 ring-slate-400 scale-110' : 'opacity-80 hover:opacity-100'"
+                                            class="w-6 h-6 rounded-full transition transform">
+                                    </button>
+                                </template>
+                            </div>
+                            <div class="pt-2 border-t border-slate-100 flex items-center justify-between px-1">
+                                <span class="text-xs font-semibold text-slate-600">Night Mode</span>
+                                <button type="button" @click="toggleDarkMode($event)"
+                                        :class="darkMode ? 'bg-indigo-600' : 'bg-slate-200'"
+                                        class="w-9 h-5 rounded-full relative transition-colors">
+                                    <span :class="darkMode ? 'translate-x-4' : 'translate-x-0.5'"
+                                        class="block w-4 h-4 rounded-full bg-white shadow transition-transform"></span>
+                                </button>
+                            </div>
                         </div>
-                    @endif
-                </a>
+                    </div>
+
+                    <!-- Info User Pojok Kanan Atas (Edit Profil) -->
+                    <a href="{{ route('profile.edit') }}" title="Edit Profil Akun"
+                       class="flex items-center space-x-3 group p-1.5 -mr-1.5 rounded-xl hover:bg-slate-100/80 transition">
+                        <div class="text-right hidden sm:block">
+                            <p class="text-sm font-bold text-slate-900 group-hover:text-indigo-600 leading-none transition">{{ Auth::user()->name }}</p>
+                            <p class="text-[11px] font-semibold text-indigo-600 uppercase mt-1">{{ Auth::user()->role }}</p>
+                        </div>
+                        @if(Auth::user()->avatar)
+                            <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}"
+                                 class="w-9 h-9 rounded-full object-cover ring-2 ring-indigo-600/20 group-hover:ring-indigo-600 transition shadow-sm">
+                        @else
+                            <div class="w-9 h-9 rounded-full bg-indigo-600 text-white font-extrabold text-sm flex items-center justify-center shadow-sm transition">
+                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                            </div>
+                        @endif
+                    </a>
+                </div>
             </header>
 
             <!-- Isi Halaman -->

@@ -1,26 +1,29 @@
-@props(['variant' => 'dark'])
+@props(['variant' => 'auto'])
 
-@php
-    $circleFill = $variant === 'light' ? '#FFFFFF' : '#4F46E5';
-    $crescentFill = $variant === 'light' ? '#A5B4FC' : '#A5B4FC';
-    $textColor = $variant === 'light' ? 'text-white' : 'text-slate-900';
-    $subtextColor = $variant === 'light' ? 'text-indigo-300' : 'text-indigo-600';
-    $maskId = 'retailify-logo-mask-' . uniqid();
-@endphp
+<div class="inline-flex items-center space-x-2.5 select-none">
+    <!-- Ikon Dua Lingkaran Bertumpuk -->
+    <div class="relative w-8 h-8 flex items-center justify-center shrink-0">
+        <span class="w-6 h-6 rounded-full translate-x-1 {{ $variant === 'light' ? 'retailify-circle-back-light' : 'retailify-circle-back' }}"
+              style="background-color: {{ $variant === 'light' ? '#93a5fd' : 'rgba(129, 140, 248, 0.75)' }};"></span>
+        <span class="w-6 h-6 rounded-full -translate-x-1 absolute {{ $variant === 'light' ? 'retailify-circle-front-light' : 'retailify-circle-front' }}"
+              style="background-color: {{ $variant === 'light' ? '#ffffff' : '#4f46e5' }};"></span>
+    </div>
 
-<div {{ $attributes->merge(['class' => 'inline-flex items-center space-x-2.5']) }}>
-    <svg class="w-8 h-7 shrink-0" viewBox="0 0 36 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <mask id="{{ $maskId }}">
-                <rect width="36" height="28" fill="white"/>
-                <circle cx="13.5" cy="14" r="14.5" fill="black"/>
-            </mask>
-        </defs>
-        <circle cx="21" cy="14" r="11" fill="{{ $crescentFill }}" mask="url(#{{ $maskId }})"/>
-        <circle cx="13.5" cy="14" r="12.5" fill="{{ $circleFill }}"/>
-    </svg>
-    <div class="text-left">
-        <span class="text-lg font-extrabold tracking-tight {{ $textColor }} block leading-none">Retailify</span>
-        <span class="text-[10px] font-semibold {{ $subtextColor }} uppercase tracking-wider block mt-0.5">Smart POS</span>
+    <div class="leading-tight">
+        @if($variant === 'light')
+            <span class="block text-base font-extrabold tracking-tight" style="color: #FFFFFF;">
+                Retailify
+            </span>
+            <span class="block text-[9px] font-extrabold tracking-widest uppercase" style="color: #C7D2FE;">
+                SMART POS
+            </span>
+        @else
+            <span class="retailify-logo-title block text-base font-extrabold tracking-tight" style="color: #0f172a;">
+                Retailify
+            </span>
+            <span class="retailify-logo-sub block text-[9px] font-extrabold tracking-widest uppercase" style="color: #4f46e5;">
+                SMART POS
+            </span>
+        @endif
     </div>
 </div>
