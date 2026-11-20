@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Laporan Penjualan Retailify ({{ $startDate }} - {{ $endDate }})</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @media print {
