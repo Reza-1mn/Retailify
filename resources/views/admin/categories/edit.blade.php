@@ -1,22 +1,32 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Edit Kategori</h2>
-    </x-slot>
+    <div class="min-h-screen bg-slate-50/70 pb-12">
+        <div class="bg-white border-b border-slate-200/80">
+            <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center gap-4">
+                <a href="{{ route('admin.categories.index') }}" class="w-10 h-10 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 flex items-center justify-center transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                </a>
+                <div>
+                    <p class="text-xs font-semibold text-amber-600">Edit Data</p>
+                    <h1 class="text-xl font-extrabold text-slate-900">Perbarui Kategori</h1>
+                </div>
+            </div>
+        </div>
 
-    <div class="py-8">
-        <div class="max-w-xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white shadow sm:rounded-lg p-6">
-                <form action="{{ route('admin.categories.update', $category) }}" method="POST">
+        <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 sm:p-8">
+                <form action="{{ route('admin.categories.update', $category) }}" method="POST" class="space-y-6">
                     @csrf
                     @method('PUT')
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kategori</label>
-                        <input type="text" name="name" value="{{ old('name', $category->name) }}" class="w-full border-gray-300 rounded shadow-sm" required>
-                        @error('name')<p class="text-red-600 text-xs mt-1">{{ $message }}</p>@enderror
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Nama Kategori <span class="text-rose-500">*</span></label>
+                        <input type="text" name="name" value="{{ old('name', $category->name) }}"
+                               class="w-full px-4 py-2.5 bg-slate-50 border-slate-200 rounded-xl text-sm focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 transition" required>
+                        @error('name')<p class="text-rose-600 text-xs font-medium mt-1.5">{{ $message }}</p>@enderror
                     </div>
-                    <div class="flex justify-end space-x-2">
-                        <a href="{{ route('admin.categories.index') }}" class="px-4 py-2 border rounded text-sm">Batal</a>
-                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Update</button>
+
+                    <div class="pt-5 border-t border-slate-100 flex items-center justify-end gap-3">
+                        <a href="{{ route('admin.categories.index') }}" class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-semibold transition">Batal</a>
+                        <button type="submit" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-sm shadow-indigo-200 transition">Simpan Perubahan</button>
                     </div>
                 </form>
             </div>
