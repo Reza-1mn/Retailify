@@ -8,6 +8,9 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        @view-transition {
+            navigation: auto;
+        }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             -webkit-font-smoothing: antialiased;
@@ -29,31 +32,32 @@
 </head>
 <body class="bg-white text-slate-800 selection:bg-indigo-600 selection:text-white">
     <x-page-loader />
-    <!-- Hero Wrapper dengan Gradasi Deep Indigo-Violet -->
+
+    <!-- HERO SECTION (Deep Indigo-Violet) -->
     <div class="hero-gradient text-white relative overflow-hidden">
         
-        <!-- Floating Pill Navbar (Sesuai Referensi) -->
+        <!-- Floating Pill Navbar -->
         <header class="pt-6 px-4 sm:px-6 relative z-30">
             <nav class="max-w-6xl mx-auto bg-white/10 border border-white/15 rounded-full px-5 sm:px-7 py-3 flex items-center justify-between shadow-lg">
-                <!-- Logo Brand -->
+                <!-- Logo Komponen Retailify -->
                 <a href="/">
                     <x-retailify-logo variant="light" />
                 </a>
 
-                <!-- Menu Tengah -->
+                <!-- Menu Tengah (Bersih tanpa duplikasi) -->
                 <div class="hidden md:flex items-center space-x-8 text-sm font-medium text-indigo-100">
                     <a href="#fitur" class="hover:text-white transition">Fitur Utama</a>
-                    <a href="#modul" class="hover:text-white transition">Modul POS</a>
-                    <a href="#alur" class="hover:text-white transition">Cara Kerja</a>
+                    <a href="#modul" class="hover:text-white transition">Eksplorasi Modul</a>
+                    <a href="#alur" class="hover:text-white transition">Alur Kerja</a>
                 </div>
 
-                <!-- Tombol Aksi Kanan (Pill Button) -->
+                <!-- Tombol Aksi Kanan -->
                 <div class="flex items-center space-x-3">
                     @if (Route::has('login'))
                         @auth
-                            <a href="{{ url('/pos') }}"
+                            <a href="{{ url('/dashboard') }}"
                                class="px-5 py-2 rounded-full bg-indigo-500 hover:bg-indigo-400 text-white text-xs sm:text-sm font-bold tracking-wide transition shadow-md">
-                                BUKA KASIR (POS)
+                                BUKA DASHBOARD
                             </a>
                         @else
                             <a href="{{ route('login') }}"
@@ -75,25 +79,19 @@
             
             <!-- Kolom Kiri: Headline & CTA -->
             <div class="lg:col-span-6 space-y-6">
-                <!-- Pill Badge -->
                 <div class="inline-flex items-center space-x-2.5 bg-white/10 border border-white/15 px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium text-indigo-100">
-                    <svg class="w-4 h-4 text-sky-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                    </svg>
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
                     <span>Solusi POS &amp; Manajemen Stok Terpadu</span>
                 </div>
 
-                <!-- Judul Utama -->
                 <h1 class="text-4xl sm:text-5xl lg:text-[52px] font-extrabold leading-[1.12] tracking-tight text-white">
                     Solusi Perangkat Lunak Kasir Modern
                 </h1>
 
-                <!-- Deskripsi -->
                 <p class="text-indigo-200 text-base sm:text-lg leading-relaxed max-w-lg">
                     Sistem Point of Sale cerdas untuk mempercepat transaksi kasir, memotong stok inventori otomatis, dan memantau operasional toko secara real-time.
                 </p>
 
-                <!-- CTA Buttons (Putih Bulat + Tombol Sekunder) -->
                 <div class="flex flex-wrap items-center gap-4 pt-2">
                     <a href="{{ route('login') }}"
                        class="inline-flex items-center space-x-2 px-7 py-3.5 rounded-full bg-white text-indigo-950 font-extrabold text-xs sm:text-sm tracking-wider uppercase hover:bg-indigo-50 transition shadow-xl">
@@ -110,24 +108,23 @@
                                 <path d="M8 5v14l11-7z"/>
                             </svg>
                         </span>
-                        <span>Lihat Demo Alur</span>
+                        <span>Lihat Cara Kerja</span>
                     </a>
                 </div>
             </div>
 
-            <!-- Kolom Kanan: Floating UI Cards (Adaptasi Persis Susunan Referensi) -->
+            <!-- Kolom Kanan: Floating UI Widgets -->
             <div class="lg:col-span-6 relative">
                 <div class="relative mx-auto max-w-lg">
                     
-                    <!-- Card 1 (Kiri Atas): Profit / Penjualan Hari Ini + Grafik -->
-                    <div class="animate-float bg-indigo-950/80 border border-white/20 rounded-2xl p-4 w-56 shadow-2xl mb-4 sm:mb-0 sm:relative sm:z-20">
+                    <!-- Card 1: Total Penjualan -->
+                    <div class="animate-float bg-indigo-950/85 border border-white/20 rounded-2xl p-4 w-56 shadow-2xl mb-4 sm:mb-0 sm:relative sm:z-20">
                         <p class="text-[11px] font-medium text-indigo-200">Total Penjualan</p>
                         <p class="text-2xl font-extrabold text-white mt-0.5">Rp 2.450K</p>
                         <div class="flex items-center space-x-1.5 text-[11px] text-emerald-300 mt-1">
                             <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
                             <span>Hari Ini (38 Struk)</span>
                         </div>
-                        <!-- Mini SVG Wave Chart -->
                         <svg class="w-full h-10 mt-2 text-indigo-400" viewBox="0 0 180 40" fill="none">
                             <path d="M0 32 Q 30 10, 60 25 T 120 15 T 180 8" stroke="currentColor" stroke-width="2.5" fill="none"/>
                             <path d="M0 32 Q 30 10, 60 25 T 120 15 T 180 8 L 180 40 L 0 40 Z" fill="url(#chartGrad)" opacity="0.35"/>
@@ -140,7 +137,7 @@
                         </svg>
                     </div>
 
-                    <!-- Card 2 (Kanan Tengah): Quick Checkout Widget -->
+                    <!-- Card 2: Quick Checkout -->
                     <div class="animate-float-delayed bg-indigo-400/25 border border-white/25 rounded-2xl p-5 w-full sm:w-72 sm:ml-auto sm:-mt-16 shadow-2xl relative z-10">
                         <div class="flex items-center justify-between mb-3">
                             <span class="text-xs font-bold text-white">Quick Checkout</span>
@@ -156,7 +153,7 @@
                         </a>
                     </div>
 
-                    <!-- Card 3 (Kanan Bawah): Stacked Live Stock / Transaction Notifications -->
+                    <!-- Card 3: Live Notifications -->
                     <div class="mt-4 sm:mt-4 sm:ml-24 space-y-2.5 relative z-20">
                         <div class="bg-white/15 border border-white/20 rounded-xl px-3.5 py-2.5 flex items-center space-x-3 shadow-lg">
                             <div class="w-8 h-8 rounded-full bg-emerald-400 text-indigo-950 font-extrabold text-xs flex items-center justify-center shrink-0">
@@ -185,7 +182,29 @@
         </section>
     </div>
 
-    <!-- Section 2: Fitur Utama (Sesuai Bagian Bawah Referensi dengan Badge Pill) -->
+    <!-- TRUST BAR / JAMINAN OPERASIONAL -->
+    <section class="border-b border-slate-100 bg-slate-50/70 py-8">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            <div>
+                <p class="text-xl sm:text-2xl font-extrabold text-indigo-600">Real-Time</p>
+                <p class="text-xs font-medium text-slate-500 mt-0.5">Pemotongan Stok Otomatis</p>
+            </div>
+            <div>
+                <p class="text-xl sm:text-2xl font-extrabold text-slate-900">ACID Safe</p>
+                <p class="text-xs font-medium text-slate-500 mt-0.5">Penguncian Transaksi Database</p>
+            </div>
+            <div>
+                <p class="text-xl sm:text-2xl font-extrabold text-slate-900">Multi-Role</p>
+                <p class="text-xs font-medium text-slate-500 mt-0.5">Pemisahan Akses Admin &amp; Kasir</p>
+            </div>
+            <div>
+                <p class="text-xl sm:text-2xl font-extrabold text-emerald-600">Audit Trail</p>
+                <p class="text-xs font-medium text-slate-500 mt-0.5">Log Keluar-Masuk Inventori</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 2: FITUR UTAMA -->
     <section id="fitur" class="py-20 max-w-6xl mx-auto px-4 sm:px-6 scroll-mt-10">
         <div class="text-center max-w-2xl mx-auto mb-14">
             <span class="inline-block px-3.5 py-1 rounded-md bg-indigo-50 text-indigo-600 text-xs font-extrabold tracking-widest uppercase">
@@ -200,7 +219,7 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="p-7 rounded-3xl bg-slate-50 border border-slate-100 hover:border-indigo-200 hover:shadow-lg transition">
+            <div class="p-7 rounded-3xl bg-white border border-slate-200/80 hover:border-indigo-300 hover:shadow-lg transition">
                 <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-extrabold text-lg mb-5">
                     01
                 </div>
@@ -210,7 +229,7 @@
                 </p>
             </div>
 
-            <div class="p-7 rounded-3xl bg-slate-50 border border-slate-100 hover:border-indigo-200 hover:shadow-lg transition">
+            <div class="p-7 rounded-3xl bg-white border border-slate-200/80 hover:border-indigo-300 hover:shadow-lg transition">
                 <div class="w-12 h-12 rounded-2xl bg-violet-600 text-white flex items-center justify-center font-extrabold text-lg mb-5">
                     02
                 </div>
@@ -220,8 +239,8 @@
                 </p>
             </div>
 
-            <div class="p-7 rounded-3xl bg-slate-50 border border-slate-100 hover:border-indigo-200 hover:shadow-lg transition">
-                <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-extrabold text-lg mb-5">
+            <div class="p-7 rounded-3xl bg-white border border-slate-200/80 hover:border-indigo-300 hover:shadow-lg transition">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-950 text-white flex items-center justify-center font-extrabold text-lg mb-5">
                     03
                 </div>
                 <h3 class="text-lg font-extrabold text-slate-900">Manajemen Multi-Role</h3>
@@ -232,8 +251,8 @@
         </div>
     </section>
 
-    <!-- Section 3: Modul Interaktif dengan Sliding Tab -->
-    <section id="modul" class="py-16 bg-slate-50 border-y border-slate-100"
+    <!-- SECTION 3: EKSPLORASI MODUL INTERAKTIF (Sliding Pill Tabs) -->
+    <section id="modul" class="py-16 bg-slate-50 border-y border-slate-200/70 scroll-mt-10"
              x-data="{
                 activeTab: 'pos',
                 tabs: [
@@ -251,7 +270,7 @@
                     EKSPLORASI MODUL
                 </span>
                 <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2">
-                    Bagaimana Retailify Bekerja?
+                    Fitur Utama di Dalam Sistem
                 </h2>
             </div>
 
@@ -330,16 +349,102 @@
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer id="alur" class="bg-white py-8">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between text-xs sm:text-sm text-slate-500 gap-4">
-            <div class="flex items-center space-x-2">
-                <span class="w-3 h-3 rounded-full bg-indigo-600 inline-block"></span>
-                <span class="font-extrabold text-slate-900">Retailify</span>
-                <span>&copy; 2026 Proyek Rekayasa Perangkat Lunak.</span>
+    <!-- SECTION 4: ALUR KERJA 3 LANGKAH -->
+    <section id="alur" class="py-20 max-w-6xl mx-auto px-4 sm:px-6 scroll-mt-10">
+        <div class="text-center max-w-2xl mx-auto mb-14">
+            <span class="inline-block px-3.5 py-1 rounded-md bg-indigo-50 text-indigo-600 text-xs font-extrabold tracking-widest uppercase">
+                ALUR OPERASIONAL
+            </span>
+            <h2 class="text-3xl font-extrabold text-slate-900 mt-3">Mulai dalam 3 Langkah Terstruktur</h2>
+            <p class="text-slate-500 text-sm sm:text-base mt-2">
+                Alur kerja terintegrasi mulai dari pendataan produk hingga pelaporan omzet harian.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="relative p-7 rounded-3xl bg-slate-50 border border-slate-200/70">
+                <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-indigo-600 text-white font-extrabold text-xs mb-4">1</span>
+                <h3 class="text-base font-extrabold text-slate-900">Kelola Master Produk</h3>
+                <p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+                    Admin menginput kategori, SKU produk, harga modal, harga jual, dan batas minimum stok untuk pemantauan otomatis.
+                </p>
             </div>
-            <div>
-                Point of Sale &amp; Sistem Inventori Terintegrasi
+
+            <div class="relative p-7 rounded-3xl bg-slate-50 border border-slate-200/70">
+                <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-indigo-600 text-white font-extrabold text-xs mb-4">2</span>
+                <h3 class="text-base font-extrabold text-slate-900">Proses Transaksi di POS</h3>
+                <p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+                    Kasir memilih item belanja pelanggan, memilih metode pembayaran, dan menyelesaikan transaksi dengan perhitungan kembalian otomatis.
+                </p>
+            </div>
+
+            <div class="relative p-7 rounded-3xl bg-slate-50 border border-slate-200/70">
+                <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-indigo-600 text-white font-extrabold text-xs mb-4">3</span>
+                <h3 class="text-base font-extrabold text-slate-900">Pantau Stok &amp; Laporan</h3>
+                <p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+                    Stok berkurang secara real-time, peringatan restock muncul otomatis, dan grafik omzet harian langsung tersaji di Dashboard.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 5: CLOSING CTA BANNER -->
+    <section class="pb-20 px-4 sm:px-6 max-w-6xl mx-auto">
+        <div class="hero-gradient rounded-3xl p-8 sm:p-14 text-center text-white shadow-2xl relative overflow-hidden">
+            <h2 class="text-2xl sm:text-4xl font-extrabold tracking-tight max-w-2xl mx-auto leading-tight">
+                Siap Mengoptimalkan Operasional Kasir &amp; Inventori Toko Anda?
+            </h2>
+            <p class="text-indigo-200 text-sm sm:text-base max-w-xl mx-auto mt-4">
+                Masuk menggunakan akun Admin atau Kasir untuk mulai mencoba simulasi Point of Sale dan sinkronisasi stok Retailify.
+            </p>
+            <div class="mt-8 flex flex-wrap justify-center gap-4">
+                <a href="{{ route('login') }}"
+                   class="inline-flex items-center space-x-2 px-8 py-3.5 rounded-full bg-white text-indigo-950 font-extrabold text-xs sm:text-sm tracking-wider uppercase hover:bg-indigo-50 transition shadow-lg">
+                    <span>MASUK KE APLIKASI</span>
+                    <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M7 7h10v10"/>
+                    </svg>
+                </a>
+                <a href="{{ route('register') }}"
+                   class="px-7 py-3.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs sm:text-sm tracking-wider uppercase transition">
+                    DAFTAR AKUN BARU
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER PROFESIONAL -->
+    <footer class="bg-slate-50 border-t border-slate-200/80 pt-12 pb-8">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-8 pb-8 border-b border-slate-200/80">
+                <div class="md:col-span-5 space-y-3">
+                    <x-retailify-logo variant="dark" />
+                    <p class="text-xs text-slate-500 leading-relaxed max-w-sm">
+                        Sistem Point of Sale (POS) dan Manajemen Inventori terintegrasi yang dirancang untuk mempercepat transaksi ritel dan menjaga akurasi stok gudang.
+                    </p>
+                </div>
+
+                <div class="md:col-span-3 space-y-2.5 text-xs">
+                    <p class="font-extrabold text-slate-900 uppercase tracking-wider">Navigasi</p>
+                    <ul class="space-y-2 text-slate-500">
+                        <li><a href="#fitur" class="hover:text-indigo-600 transition">Fitur Utama</a></li>
+                        <li><a href="#modul" class="hover:text-indigo-600 transition">Eksplorasi Modul</a></li>
+                        <li><a href="#alur" class="hover:text-indigo-600 transition">Alur Operasional</a></li>
+                    </ul>
+                </div>
+
+                <div class="md:col-span-4 space-y-2.5 text-xs">
+                    <p class="font-extrabold text-slate-900 uppercase tracking-wider">Akses Sistem</p>
+                    <ul class="space-y-2 text-slate-500">
+                        <li><a href="{{ route('login') }}" class="hover:text-indigo-600 transition">Masuk Kasir / Admin</a></li>
+                        <li><a href="{{ route('register') }}" class="hover:text-indigo-600 transition">Registrasi Akun Baru</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-4">
+                <p>&copy; 2026 <strong>Retailify</strong>. Hak Cipta Dilindungi.</p>
+                <p>Proyek Rekayasa Perangkat Lunak &mdash; Smart POS &amp; Inventory System</p>
             </div>
         </div>
     </footer>
