@@ -12,9 +12,14 @@
         <!-- Kartu Identitas Singkat -->
         <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div class="flex items-center space-x-4">
-                <div class="w-14 h-14 rounded-2xl bg-indigo-600 text-white font-extrabold text-xl flex items-center justify-center shadow-sm shadow-indigo-600/20 shrink-0">
-                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                </div>
+                @if(Auth::user()->avatar)
+                    <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}"
+                        class="w-14 h-14 rounded-2xl object-cover ring-2 ring-indigo-600/20 shadow-sm shrink-0">
+                @else
+                    <div class="w-14 h-14 rounded-2xl bg-indigo-600 text-white font-extrabold text-xl flex items-center justify-center shadow-sm shadow-indigo-600/20 shrink-0">
+                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                    </div>
+                @endif
                 <div>
                     <div class="flex items-center space-x-2.5">
                         <h2 class="text-lg font-extrabold text-slate-900">{{ Auth::user()->name }}</h2>
