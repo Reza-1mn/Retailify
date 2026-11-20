@@ -23,12 +23,14 @@
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased" x-data="{ sidebarOpen: false }">
     <x-page-loader />
-    <div class="min-h-screen flex bg-slate-50">
+
+    <!-- Ubah min-h-screen menjadi lg:h-screen lg:overflow-hidden -->
+    <div class="min-h-screen lg:h-screen lg:overflow-hidden flex bg-slate-50">
         
-        <!-- SIDEBAR KIRI (Adaptasi Referensi dengan Warna Retailify Indigo) -->
+        <!-- SIDEBAR KIRI: Tambahkan lg:h-screen lg:sticky lg:top-0 -->
         <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-               class="fixed inset-y-0 left-0 z-40 w-60 bg-white border-r border-slate-200/80 flex flex-col justify-between transition-transform duration-200 lg:static lg:translate-x-0 shrink-0">
-            
+               class="fixed inset-y-0 left-0 z-40 w-60 bg-white border-r border-slate-200/80 flex flex-col justify-between transition-transform duration-200 lg:static lg:translate-x-0 lg:h-screen shrink-0">
+                  
             <div>
                 <!-- Logo Brand -->
                 <div class="h-16 px-6 flex items-center justify-between border-b border-slate-100">
