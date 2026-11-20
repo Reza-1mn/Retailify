@@ -3,7 +3,8 @@
         <h1 class="text-base sm:text-lg font-extrabold text-slate-900">Point of Sale (Kasir)</h1>
     </x-slot>
 
-    <div class="flex flex-col xl:flex-row min-h-[calc(100vh-4rem)]"
+<!-- Ubah min-h-[calc(100vh-4rem)] menjadi xl:h-[calc(100vh-4rem)] xl:overflow-hidden -->
+    <div class="flex flex-col xl:flex-row min-h-[calc(100vh-4rem)] xl:h-[calc(100vh-4rem)] xl:overflow-hidden"
          x-data="posApp({{ $products->toJson() }}, {{ $categories->toJson() }})">
         
         <!-- KOLOM TENGAH: Riwayat Singkat, Kategori & Grid Produk -->
