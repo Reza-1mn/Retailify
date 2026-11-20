@@ -15,6 +15,18 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+
+                    @if(auth()->user()->role === 'admin')
+                        <x-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
+                            {{ __('Kategori') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.suppliers.index')" :active="request()->routeIs('admin.suppliers.*')">
+                            {{ __('Supplier') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.products.index')" :active="request()->routeIs('admin.products.*')">
+                            {{ __('Produk') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -70,6 +82,18 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+
+            @if(auth()->user()->role === 'admin')
+                <x-responsive-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
+                    {{ __('Kategori') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.suppliers.index')" :active="request()->routeIs('admin.suppliers.*')">
+                    {{ __('Supplier') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.products.index')" :active="request()->routeIs('admin.products.*')">
+                    {{ __('Produk') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->
