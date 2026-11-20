@@ -4,11 +4,7 @@
         <div class="flex justify-between h-16">
             <div class="flex">
                 <!-- Logo -->
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
-                    </a>
-                </div>
+                <x-retailify-logo variant="dark" />
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
@@ -27,6 +23,9 @@
                             {{ __('Produk') }}
                         </x-nav-link>
                     @endif
+                    <x-nav-link :href="route('pos.index')" :active="request()->routeIs('pos.*')">
+                        {{ __('Kasir (POS)') }}
+                    </x-nav-link>
                 </div>
             </div>
 
