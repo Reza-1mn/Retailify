@@ -176,7 +176,8 @@
                             <span>Data Supplier</span>
                         </a>
 
-                        <a href="#" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition">
+                        <a href="{{ route('admin.inventory.restock') }}"
+                           class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-bold transition {{ request()->routeIs('admin.inventory.*') ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
                             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
                             </svg>
