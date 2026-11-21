@@ -6,7 +6,19 @@ use Illuminate\Database\Eloquent\Model;
 class Product extends Model
 {
     protected $fillable = [
-        'category_id', 'sku', 'name', 'buy_price', 'sell_price', 'stock', 'min_stock'
+        'category_id',
+        'sku',
+        'name', 
+        'image', 
+        'buy_price', 
+        'sell_price', 
+        'stock', 
+        'min_stock', 
+        'is_active'
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     public function category() {
@@ -15,5 +27,10 @@ class Product extends Model
 
     public function stockLogs() {
         return $this->hasMany(StockLog::class);
+    }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->image ? asset('storage/' . $this->image) : null;
     }
 }

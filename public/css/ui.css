@@ -1,0 +1,90 @@
+/* =========================================================
+   4. SEMANTIC COMPONENTS & PAGE CALIBRATION (ui.css)
+   Tersambung langsung ke variabel --brand-* dari themes.css
+   ========================================================= */
+
+:root {
+    --ui-surface: #ffffff;
+    --ui-bg: #f8fafc;
+    --ui-border: #e2e8f0;
+
+    /* Merah Terkalibrasi (Lembut, Jelas & Tidak Norak) */
+    --ui-danger: #c83e4d;
+    --ui-danger-hover: #a62c3a;
+    --ui-danger-soft: rgba(200, 62, 77, 0.08);
+    --ui-danger-border: rgba(200, 62, 77, 0.25);
+
+    /* Avatar Thumbnail / Placeholder */
+    --ui-avatar-bg: #e2e8f0;
+    --ui-avatar-text: #334155;
+    --ui-avatar-ring: #ffffff;
+}
+
+html.dark {
+    --ui-surface: #1a2234;
+    --ui-bg: #131926;
+    --ui-border: #2a354f;
+
+    --ui-danger: #f0717e;
+    --ui-danger-hover: #fb8c97;
+    --ui-danger-soft: rgba(240, 113, 126, 0.14);
+    --ui-danger-border: rgba(240, 113, 126, 0.30);
+
+    --ui-avatar-bg: #232d45;
+    --ui-avatar-text: #e2e8f0;
+    --ui-avatar-ring: #1a2234;
+}
+
+/* 1. Tombol Utama Sinkron dengan 5 Warna Tema (--brand-*) */
+.btn-primary-theme {
+    background-color: var(--brand-600, #6366f1) !important;
+    color: #ffffff !important;
+    transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+.btn-primary-theme:hover:not(:disabled) {
+    background-color: var(--brand-700, #5558d9) !important;
+}
+
+/* 2. Tombol Delete di Tabel */
+.btn-danger-soft {
+    color: var(--ui-danger) !important;
+    background-color: transparent !important;
+    border: 1px solid transparent !important;
+    transition: all 0.15s ease;
+}
+.btn-danger-soft:hover:not(:disabled) {
+    color: var(--ui-danger-hover) !important;
+    background-color: var(--ui-danger-soft) !important;
+    border-color: var(--ui-danger-border) !important;
+}
+
+/* 3. Tombol Bulk Delete */
+.btn-danger-outline {
+    color: var(--ui-danger) !important;
+    background-color: var(--ui-surface) !important;
+    border: 1px solid var(--ui-danger-border) !important;
+    transition: all 0.15s ease;
+}
+.btn-danger-outline:hover:not(:disabled) {
+    background-color: var(--ui-danger-soft) !important;
+}
+.btn-danger-outline:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed;
+}
+
+/* 4. Avatar Inisial Produk / Profil */
+.ui-avatar-pill {
+    background-color: var(--ui-avatar-bg) !important;
+    color: var(--ui-avatar-text) !important;
+    border: 2px solid var(--ui-avatar-ring) !important;
+}
+
+/* 5. Netralisasi Kartu Transaksi POS di Night Mode */
+html.dark .bg-indigo-50\/80,
+html.dark .bg-amber-50\/80,
+html.dark .bg-violet-50\/80,
+html.dark .bg-sky-50\/80 {
+    background-color: var(--ui-surface) !important;
+    border-color: var(--ui-border) !important;
+}
