@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class SupplierController extends Controller
 {
@@ -22,9 +23,14 @@ class SupplierController extends Controller
     {
         $validated = $request->validate([
             'name'    => 'required|string|max:150',
+            'image'   => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'phone'   => 'nullable|string|max:25',
             'address' => 'nullable|string',
         ]);
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('suppliers', 'public');
+        }
 
         Supplier::create($validated);
 
@@ -41,9 +47,20 @@ class SupplierController extends Controller
     {
         $validated = $request->validate([
             'name'    => 'required|string|max:150',
+            'image'   => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'phone'   => 'nullable|string|max:25',
             'address' => 'nullable|string',
         ]);
+
+        if ($request->hasFile('image')) {
+            if ($supplier->image && Storage::disk('public')->exists($supplier->image)) {
+                Storage::disk('public')->delete($supplier->image);
+            }
+
+            $validated['image'] = $request->file('image')->store('suppliers', 'public');
+        } else {
+            unset($validated['image']);
+        }
 
         $supplier->update($validated);
 
@@ -53,6 +70,10 @@ class SupplierController extends Controller
 
     public function destroy(Supplier $supplier)
     {
+        if ($supplier->image && Storage::disk('public')->exists($supplier->image)) {
+            Storage::disk('public')->delete($supplier->image);
+        }
+
         $supplier->delete();
 
         return redirect()->route('admin.suppliers.index')

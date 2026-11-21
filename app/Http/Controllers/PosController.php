@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\StockLog;
 use App\Models\Transaction;
@@ -14,8 +15,15 @@ class PosController extends Controller
 {
     public function index()
     {
-        $categories = \App\Models\Category::withCount('products')->get();
-        $products = Product::with('category')->orderBy('name')->get();
+        $categories = Category::withCount(['products' => function ($query) {
+            $query->where('is_active', true);
+        }])->get();
+
+        $products = Product::with('category')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
         $recentTransactions = Transaction::withCount('details')
             ->latest()
             ->take(4)
@@ -40,6 +48,10 @@ class PosController extends Controller
 
                 foreach ($validated['items'] as $item) {
                     $product = Product::lockForUpdate()->findOrFail($item['product_id']);
+
+                    if (!$product->is_active) {
+                        throw new \Exception("Produk '{$product->name}' sedang dinonaktifkan dan tidak dapat dijual.");
+                    }
 
                     if ($product->stock < $item['qty']) {
                         throw new \Exception("Stok produk '{$product->name}' tidak mencukupi (tersisa {$product->stock}).");

@@ -78,9 +78,14 @@
                                     <td class="py-4 px-6 font-medium text-slate-400">{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</td>
                                     <td class="py-4 px-6">
                                         <div class="flex items-center gap-3">
-                                            <div class="w-9 h-9 rounded-xl bg-sky-50 text-sky-700 font-bold text-xs flex items-center justify-center uppercase shrink-0">
-                                                {{ substr($supplier->name, 0, 2) }}
-                                            </div>
+                                            @if($supplier->image)
+                                                <img src="{{ asset('storage/' . $supplier->image) }}" alt="{{ $supplier->name }}"
+                                                     class="w-9 h-9 rounded-xl object-cover border border-slate-200 shrink-0">
+                                            @else
+                                                <div class="w-9 h-9 rounded-xl bg-sky-50 text-sky-700 font-bold text-xs flex items-center justify-center uppercase shrink-0">
+                                                    {{ substr($supplier->name, 0, 2) }}
+                                                </div>
+                                            @endif
                                             <span class="font-semibold text-slate-800">{{ $supplier->name }}</span>
                                         </div>
                                     </td>

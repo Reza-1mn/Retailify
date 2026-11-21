@@ -25,6 +25,7 @@
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('css/themes.css') }}">
     <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/ui.css') }}">
 
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased transition-colors duration-200"

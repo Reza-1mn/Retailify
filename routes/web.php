@@ -38,6 +38,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('suppliers', SupplierController::class)->except(['show']);
     Route::resource('products', ProductController::class)->except(['show']);
 
+    Route::patch('/products/{product}/toggle-status', [ProductController::class, 'toggleStatus'])->name('products.toggle-status');
+    Route::post('/products/bulk-action', [ProductController::class, 'bulkAction'])->name('products.bulk-action');
+
     Route::get('/inventory/restock', [InventoryController::class, 'index'])->name('inventory.restock');
     Route::post('/inventory/restock', [InventoryController::class, 'storeRestock'])->name('inventory.restock.store');
     Route::post('/inventory/adjustment', [InventoryController::class, 'storeAdjustment'])->name('inventory.adjustment.store');

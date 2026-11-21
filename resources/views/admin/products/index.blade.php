@@ -1,155 +1,342 @@
 <x-app-layout>
-    <div x-data="{ search: '', onlyLowStock: false }" class="min-h-screen bg-slate-50/70 pb-12">
-        <!-- Top Banner Header -->
-        <div class="bg-white border-b border-slate-200/80">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-md shadow-emerald-200">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-2 text-xs font-medium text-slate-400 mb-0.5">
-                                <span>Master Data</span>
-                                <span>/</span>
-                                <span class="text-emerald-600">Produk</span>
-                            </div>
-                            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Katalog & Stok Produk</h1>
-                        </div>
-                    </div>
+    @php
+        $totalCount = $products->count();
+        $activeCount = $products->where('is_active', true)->count();
+        $inactiveCount = $products->where('is_active', false)->count();
+        $lowStockItems = $products->filter(fn($p) => $p->stock <= $p->min_stock);
+        $noPhotoItems = $products->filter(fn($p) => empty($p->image));
+    @endphp
 
+    <div x-data="{
+            tab: 'all',
+            search: '',
+            categoryFilter: 'all',
+            selectedIds: [],
+            allIds: {{ $products->pluck('id')->toJson() }},
+            toggleAll() {
+                if (this.selectedIds.length === this.allIds.length) {
+                    this.selectedIds = [];
+                } else {
+                    this.selectedIds = [...this.allIds];
+                }
+            },
+            submitBulk(actionName) {
+                if (this.selectedIds.length === 0) return;
+                if (actionName === 'delete' && !confirm('Hapus ' + this.selectedIds.length + ' produk terpilih secara permanen?')) return;
+                document.getElementById('bulkActionInput').value = actionName;
+                document.getElementById('bulkActionForm').submit();
+            }
+         }"
+         class="min-h-screen bg-slate-50/70 pb-12">
+
+        <div class="w-full px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+
+            <!-- Header Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2 text-xs font-medium text-slate-400 mb-1">
+                        <span>Manajemen Toko</span>
+                        <span>/</span>
+                        <span class="text-slate-700 font-semibold">Manage Products</span>
+                    </div>
+                    <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Manage Products</h1>
+                </div>
+
+                <div class="flex items-center gap-2.5">
+                    <a href="{{ route('admin.categories.index') }}"
+                       class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold shadow-xs transition">
+                        <span>Kelola Kategori</span>
+                    </a>
                     <a href="{{ route('admin.products.create') }}"
-                       class="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm shadow-indigo-200 transition-all duration-150">
+                       class="btn-primary-theme inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-xs">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                        Tambah Produk
+                        <span>Add Product</span>
                     </a>
                 </div>
             </div>
-        </div>
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-6">
             @if(session('success'))
-                <div class="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl shadow-sm">
-                    <span class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                    </span>
-                    <span class="text-sm font-semibold">{{ session('success') }}</span>
+                <div class="flex items-center gap-3 p-4 bg-white border border-slate-200 text-slate-800 rounded-2xl shadow-xs">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                    <span class="text-xs sm:text-sm font-semibold">{{ session('success') }}</span>
                 </div>
             @endif
 
-            @php
-                $lowStockCount = $products->filter(fn($p) => $p->stock <= $p->min_stock)->count();
-                $totalStockUnits = $products->sum('stock');
-            @endphp
-
-            <!-- Kartu Ringkasan -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total SKU Produk</p>
-                        <p class="text-3xl font-extrabold text-slate-900 mt-1">{{ $products->count() }}</p>
-                    </div>
-                    <div class="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
-                    </div>
+            <!-- Ringkasan Kondisi Katalog -->
+            <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs space-y-4">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <h2 class="text-sm font-bold text-slate-800">Ringkasan Kondisi Katalog</h2>
                 </div>
 
-                <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Unit Tersedia</p>
-                        <p class="text-3xl font-extrabold text-slate-900 mt-1">{{ number_format($totalStockUnits, 0, ',', '.') }}</p>
-                    </div>
-                    <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    </div>
-                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Kartu 1: Low Stock -->
+                    <button type="button" @click="tab = 'low_stock'"
+                            class="text-left p-4 rounded-xl bg-slate-50/70 hover:bg-slate-100/70 border border-slate-200/80 transition group flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm font-bold text-slate-900">Stok Menipis (Low Stock)</p>
+                                <span class="text-xs font-bold px-2.5 py-0.5 rounded-md border border-slate-200 bg-white {{ $lowStockItems->count() > 0 ? 'text-rose-600' : 'text-slate-600' }}">
+                                    {{ $lowStockItems->count() }} item
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1.5 line-clamp-2">Segera lakukan restock agar kasir tidak kehabisan barang saat transaksi.</p>
+                        </div>
+                        <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-200/60">
+                            <div class="flex -space-x-1.5">
+                                @forelse($lowStockItems->take(3) as $item)
+                                    @if($item->image)
+                                        <img src="{{ asset('storage/' . $item->image) }}" class="w-8 h-8 rounded-full object-cover ui-avatar-pill">
+                                    @else
+                                        <div class="w-8 h-8 rounded-full ui-avatar-pill text-[11px] font-extrabold flex items-center justify-center uppercase">
+                                            {{ substr($item->name, 0, 2) }}
+                                        </div>
+                                    @endif
+                                @empty
+                                    <span class="text-xs text-slate-500 font-medium">Semua stok dalam batas aman</span>
+                                @endforelse
+                            </div>
+                            <span class="text-slate-400 group-hover:text-slate-700 text-sm font-bold">&rsaquo;</span>
+                        </div>
+                    </button>
 
-                <div class="bg-white rounded-2xl border {{ $lowStockCount > 0 ? 'border-rose-200 bg-rose-50/30' : 'border-slate-200/80' }} p-5 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider {{ $lowStockCount > 0 ? 'text-rose-500' : 'text-slate-400' }}">Perlu Restock</p>
-                        <p class="text-3xl font-extrabold {{ $lowStockCount > 0 ? 'text-rose-600' : 'text-emerald-600' }} mt-1">{{ $lowStockCount }}</p>
-                    </div>
-                    <div class="w-11 h-11 rounded-xl {{ $lowStockCount > 0 ? 'bg-rose-100 text-rose-600' : 'bg-emerald-50 text-emerald-600' }} flex items-center justify-center">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                    </div>
+                    <!-- Kartu 2: Lengkapi Foto Produk -->
+                    <button type="button" @click="tab = 'no_photo'"
+                            class="text-left p-4 rounded-xl bg-slate-50/70 hover:bg-slate-100/70 border border-slate-200/80 transition group flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm font-bold text-slate-900">Lengkapi Foto Produk</p>
+                                <span class="text-xs font-bold px-2.5 py-0.5 rounded-md border border-slate-200 bg-white text-slate-700">
+                                    {{ $noPhotoItems->count() }} item
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1.5 line-clamp-2">Tambahkan foto produk agar tampilan grid di halaman Kasir (POS) lebih visual.</p>
+                        </div>
+                        <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-200/60">
+                            <div class="flex -space-x-1.5">
+                                @forelse($noPhotoItems->take(3) as $item)
+                                    <div class="w-8 h-8 rounded-full ui-avatar-pill text-[11px] font-extrabold flex items-center justify-center uppercase">
+                                        {{ substr($item->name, 0, 2) }}
+                                    </div>
+                                @empty
+                                    <span class="text-xs text-slate-500 font-medium">Semua produk memiliki foto</span>
+                                @endforelse
+                            </div>
+                            <span class="text-slate-400 group-hover:text-slate-700 text-sm font-bold">&rsaquo;</span>
+                        </div>
+                    </button>
+
+                    <!-- Kartu 3: Produk Nonaktif -->
+                    <button type="button" @click="tab = 'inactive'"
+                            class="text-left p-4 rounded-xl bg-slate-50/70 hover:bg-slate-100/70 border border-slate-200/80 transition group flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm font-bold text-slate-900">Produk Nonaktif (Inactive)</p>
+                                <span class="text-xs font-bold px-2.5 py-0.5 rounded-md border border-slate-200 bg-white text-slate-700">
+                                    {{ $inactiveCount }} item
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1.5 line-clamp-2">Produk nonaktif disembunyikan dari Kasir tanpa menghapus riwayat penjualannya.</p>
+                        </div>
+                        <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-200/60">
+                            <span class="text-xs font-semibold text-slate-600">Lihat daftar produk nonaktif</span>
+                            <span class="text-slate-400 group-hover:text-slate-700 text-sm font-bold">&rsaquo;</span>
+                        </div>
+                    </button>
                 </div>
             </div>
 
-            <!-- Bar Pencarian & Filter Stok -->
-            <div class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div class="relative flex-1">
-                    <svg class="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
-                    <input type="text" x-model="search" placeholder="Cari SKU, nama produk, atau kategori..."
-                           class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border-slate-200 rounded-xl text-sm text-slate-700 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 transition">
+            <!-- Container Utama: Tabs + Filter + Bulk Action + Tabel -->
+            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+
+                <!-- Tab Navigasi Status -->
+                <div class="px-6 pt-4 border-b border-slate-200/80 flex items-center gap-6 overflow-x-auto text-xs sm:text-sm">
+                    <button type="button" @click="tab = 'all'"
+                            :class="tab === 'all' ? 'border-indigo-600 text-slate-900 font-extrabold' : 'border-transparent text-slate-500 hover:text-slate-800 font-semibold'"
+                            class="pb-3.5 border-b-2 whitespace-nowrap transition">
+                        All <span class="ml-1 text-xs text-slate-400 font-semibold">{{ $totalCount }}</span>
+                    </button>
+
+                    <button type="button" @click="tab = 'active'"
+                            :class="tab === 'active' ? 'border-indigo-600 text-slate-900 font-extrabold' : 'border-transparent text-slate-500 hover:text-slate-800 font-semibold'"
+                            class="pb-3.5 border-b-2 whitespace-nowrap transition">
+                        Active <span class="ml-1 text-xs text-slate-400 font-semibold">{{ $activeCount }}</span>
+                    </button>
+
+                    <button type="button" @click="tab = 'inactive'"
+                            :class="tab === 'inactive' ? 'border-indigo-600 text-slate-900 font-extrabold' : 'border-transparent text-slate-500 hover:text-slate-800 font-semibold'"
+                            class="pb-3.5 border-b-2 whitespace-nowrap transition">
+                        Inactive <span class="ml-1 text-xs text-slate-400 font-semibold">{{ $inactiveCount }}</span>
+                    </button>
+
+                    <button type="button" @click="tab = 'low_stock'"
+                            :class="tab === 'low_stock' ? 'border-indigo-600 text-slate-900 font-extrabold' : 'border-transparent text-slate-500 hover:text-slate-800 font-semibold'"
+                            class="pb-3.5 border-b-2 whitespace-nowrap transition">
+                        Low Stock <span class="ml-1 text-xs text-slate-400 font-semibold">{{ $lowStockItems->count() }}</span>
+                    </button>
                 </div>
 
-                <button type="button" @click="onlyLowStock = !onlyLowStock"
-                        :class="onlyLowStock ? 'bg-rose-600 text-white border-rose-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'"
-                        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 border rounded-xl text-xs font-bold transition shrink-0">
-                    <span class="w-2 h-2 rounded-full" :class="onlyLowStock ? 'bg-white' : 'bg-rose-500'"></span>
-                    Filter Stok Menipis ({{ $lowStockCount }})
-                </button>
-            </div>
+                <!-- Bar Filter & Pencarian -->
+                <div class="p-4 sm:px-6 bg-white border-b border-slate-200/80 space-y-3">
+                    <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3">
+                        <div class="relative flex-1">
+                            <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
+                            <input type="text" x-model="search" placeholder="Cari nama produk atau kode SKU..."
+                                   class="w-full pl-10 pr-4 py-2 bg-white border-slate-200 rounded-xl text-xs sm:text-sm focus:border-indigo-500 focus:ring-indigo-500 transition">
+                        </div>
 
-            <!-- Tabel Produk -->
-            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                        <select x-model="categoryFilter"
+                                class="px-3.5 py-2 bg-white border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="all">Semua Kategori</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                            @endforeach
+                        </select>
+
+                        <button type="button" @click="tab = 'all'; search = ''; categoryFilter = 'all'; selectedIds = []"
+                                class="px-4 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold transition">
+                            Reset
+                        </button>
+                    </div>
+
+                    <!-- Bar Bulk Action -->
+                    <form id="bulkActionForm" action="{{ route('admin.products.bulk-action') }}" method="POST"
+                          class="flex flex-wrap items-center gap-2 pt-1">
+                        @csrf
+                        <input type="hidden" name="action" id="bulkActionInput">
+                        <template x-for="id in selectedIds" :key="id">
+                            <input type="hidden" name="ids[]" :value="id">
+                        </template>
+
+                        <span class="text-xs font-bold text-slate-600 mr-1">
+                            Selected: <strong class="text-slate-900" x-text="selectedIds.length"></strong>
+                        </span>
+
+                        <button type="button" @click="submitBulk('activate')" :disabled="selectedIds.length === 0"
+                                class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-45 disabled:cursor-not-allowed transition">
+                            Activate
+                        </button>
+
+                        <button type="button" @click="submitBulk('deactivate')" :disabled="selectedIds.length === 0"
+                                class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-45 disabled:cursor-not-allowed transition">
+                            Deactivate
+                        </button>
+
+                        <button type="button" @click="submitBulk('delete')" :disabled="selectedIds.length === 0"
+                                class="btn-danger-outline px-3 py-1.5 rounded-lg text-xs font-bold">
+                            Delete
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Tabel Produk -->
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200/80 text-xs font-bold uppercase tracking-wider text-slate-500">
-                                <th class="py-4 px-6">SKU</th>
-                                <th class="py-4 px-6">Produk & Kategori</th>
-                                <th class="py-4 px-6">Harga Beli</th>
-                                <th class="py-4 px-6">Harga Jual</th>
-                                <th class="py-4 px-6">Stok & Status</th>
-                                <th class="py-4 px-6 text-right">Aksi</th>
+                            <tr class="bg-slate-50 border-b border-slate-200/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                                <th class="py-3.5 px-5 w-10">
+                                    <input type="checkbox" @click="toggleAll()"
+                                           :checked="allIds.length > 0 && selectedIds.length === allIds.length"
+                                           class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                                </th>
+                                <th class="py-3.5 px-4">Product</th>
+                                <th class="py-3.5 px-4">SKU</th>
+                                <th class="py-3.5 px-4">Stock</th>
+                                <th class="py-3.5 px-4">Price</th>
+                                <th class="py-3.5 px-4">Status</th>
+                                <th class="py-3.5 px-6 text-right">Action</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 text-sm">
                             @forelse($products as $product)
-                                @php $isLow = $product->stock <= $product->min_stock; @endphp
-                                <tr x-show="(search === '' || '{{ strtolower($product->sku . ' ' . $product->name . ' ' . ($product->category->name ?? '')) }}'.includes(search.toLowerCase())) && (!onlyLowStock || {{ $isLow ? 'true' : 'false' }})"
-                                    class="hover:bg-slate-50/90 transition-colors">
-                                    <td class="py-4 px-6">
-                                        <span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg font-mono text-xs font-bold">{{ $product->sku }}</span>
+                                @php
+                                    $isLow = $product->stock <= $product->min_stock;
+                                    $hasNoPhoto = empty($product->image);
+                                @endphp
+                                <tr x-show="
+                                        (tab === 'all' ||
+                                         (tab === 'active' && {{ $product->is_active ? 'true' : 'false' }}) ||
+                                         (tab === 'inactive' && {{ !$product->is_active ? 'true' : 'false' }}) ||
+                                         (tab === 'low_stock' && {{ $isLow ? 'true' : 'false' }}) ||
+                                         (tab === 'no_photo' && {{ $hasNoPhoto ? 'true' : 'false' }})) &&
+                                        (categoryFilter === 'all' || categoryFilter == '{{ $product->category_id }}') &&
+                                        (search === '' || '{{ strtolower($product->sku . ' ' . $product->name) }}'.includes(search.toLowerCase()))
+                                    "
+                                    class="hover:bg-slate-50 transition-colors {{ !$product->is_active ? 'opacity-65' : '' }}">
+
+                                    <td class="py-4 px-5">
+                                        <input type="checkbox" value="{{ $product->id }}" x-model.number="selectedIds"
+                                               class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
                                     </td>
-                                    <td class="py-4 px-6">
-                                        <p class="font-bold text-slate-800">{{ $product->name }}</p>
-                                        <span class="inline-flex items-center mt-1 px-2 py-0.5 rounded-md text-xs font-medium bg-indigo-50 text-indigo-700">
-                                            {{ $product->category->name ?? 'Tanpa Kategori' }}
+
+                                    <td class="py-4 px-4">
+                                        <div class="flex items-center gap-3.5">
+                                            @if($product->image)
+                                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
+                                                     class="w-11 h-11 rounded-xl object-cover border border-slate-200 shrink-0">
+                                            @else
+                                                <div class="w-11 h-11 rounded-xl bg-slate-100 text-slate-600 font-bold text-xs flex items-center justify-center uppercase shrink-0 border border-slate-200/80">
+                                                    {{ substr($product->name, 0, 2) }}
+                                                </div>
+                                            @endif
+                                            <div class="min-w-0">
+                                                <p class="font-bold text-slate-900 truncate">{{ $product->name }}</p>
+                                                <div class="flex items-center gap-2 mt-1">
+                                                    <span class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-600">
+                                                        {{ $product->category->name ?? 'Umum' }}
+                                                    </span>
+                                                    <span class="text-[11px] text-slate-400">Modal: Rp {{ number_format($product->buy_price, 0, ',', '.') }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <td class="py-4 px-4">
+                                        <span class="font-mono text-xs font-semibold text-slate-600">
+                                            {{ $product->sku }}
                                         </span>
                                     </td>
-                                    <td class="py-4 px-6 text-slate-500">Rp {{ number_format($product->buy_price, 0, ',', '.') }}</td>
-                                    <td class="py-4 px-6 font-bold text-slate-800">Rp {{ number_format($product->sell_price, 0, ',', '.') }}</td>
-                                    <td class="py-4 px-6">
-                                        <div class="flex items-center gap-2.5">
-                                            <span class="text-base font-extrabold {{ $isLow ? 'text-rose-600' : 'text-slate-800' }}">{{ $product->stock }}</span>
-                                            @if($isLow)
-                                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs bg-rose-100 text-rose-700 rounded-full font-bold">
-                                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-600 animate-ping"></span>
-                                                    Stok Menipis
-                                                </span>
-                                            @else
-                                                <span class="inline-flex items-center px-2.5 py-0.5 text-xs bg-emerald-50 text-emerald-700 rounded-full font-semibold">
-                                                    Aman
-                                                </span>
-                                            @endif
-                                        </div>
-                                        <p class="text-[11px] text-slate-400 mt-0.5">Min. stok: {{ $product->min_stock }}</p>
+
+                                    <td class="py-4 px-4">
+                                        <span class="font-bold {{ $isLow ? 'text-rose-600' : 'text-slate-900' }}">{{ $product->stock }}</span>
+                                        <span class="text-xs text-slate-400">pcs</span>
+                                        @if($isLow)
+                                            <p class="text-[10px] font-semibold text-rose-600 mt-0.5">Min. {{ $product->min_stock }}</p>
+                                        @endif
                                     </td>
+
+                                    <td class="py-4 px-4 font-bold text-slate-900">
+                                        Rp {{ number_format($product->sell_price, 0, ',', '.') }}
+                                    </td>
+
+                                    <!-- Toggle Switch Active / Inactive -->
+                                    <td class="py-4 px-4">
+                                        <form action="{{ route('admin.products.toggle-status', $product) }}" method="POST" class="inline-flex items-center gap-2.5">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit"
+                                                    title="Klik untuk {{ $product->is_active ? 'menonaktifkan' : 'mengaktifkan' }} produk"
+                                                    class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out {{ $product->is_active ? 'bg-indigo-600' : 'bg-slate-300' }}">
+                                                <span class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200 ease-in-out {{ $product->is_active ? 'translate-x-4' : 'translate-x-0' }}"></span>
+                                            </button>
+                                            <span class="text-xs font-semibold {{ $product->is_active ? 'text-slate-800' : 'text-slate-400' }}">
+                                                {{ $product->is_active ? 'Active' : 'Inactive' }}
+                                            </span>
+                                        </form>
+                                    </td>
+
                                     <td class="py-4 px-6 text-right">
-                                        <div class="inline-flex items-center gap-2">
+                                        <div class="inline-flex items-center gap-2 text-xs font-bold">
                                             <a href="{{ route('admin.products.edit', $product) }}"
-                                               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-amber-50 text-slate-700 hover:text-amber-700 rounded-lg text-xs font-semibold transition">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                               class="px-2.5 py-1 rounded-lg text-slate-700 hover:bg-slate-100 transition">
                                                 Edit
                                             </a>
+                                            <span class="text-slate-300">|</span>
                                             <form action="{{ route('admin.products.destroy', $product) }}" method="POST" class="inline" onsubmit="return confirm('Hapus produk {{ $product->name }}?')">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 rounded-lg text-xs font-semibold transition">
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                                    Hapus
+                                                <button type="submit" class="btn-danger-soft px-2.5 py-1 rounded-lg font-bold">
+                                                    Delete
                                                 </button>
                                             </form>
                                         </div>
@@ -157,9 +344,9 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="py-16 text-center">
+                                    <td colspan="7" class="py-16 text-center">
                                         <p class="text-slate-600 font-semibold text-sm">Belum ada data produk</p>
-                                        <p class="text-slate-400 text-xs mt-1">Klik <span class="text-indigo-600 font-semibold">+ Tambah Produk</span> untuk mulai mengisi katalog toko.</p>
+                                        <p class="text-slate-400 text-xs mt-1">Klik <span class="text-indigo-600 font-semibold">+ Add Product</span> untuk menambahkan produk pertama.</p>
                                     </td>
                                 </tr>
                             @endforelse
@@ -167,6 +354,7 @@
                     </table>
                 </div>
             </div>
+
         </div>
     </div>
 </x-app-layout>
