@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
@@ -14,11 +15,13 @@ class Product extends Model
         'sell_price', 
         'stock', 
         'min_stock', 
+        'expired_date',
         'is_active'
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'is_active'    => 'boolean',
+        'expired_date' => 'date',
     ];
 
     public function category() {
@@ -32,5 +35,19 @@ class Product extends Model
     public function getImageUrlAttribute(): ?string
     {
         return $this->image ? asset('storage/' . $this->image) : null;
+    }
+
+    public function isExpired(): bool
+    {
+        return $this->expired_date !== null && $this->expired_date->isBefore(today());
+    }
+
+    public function isNearExpiry(int $days = 30): bool
+    {
+        if ($this->expired_date === null || $this->isExpired()) {
+            return false;
+        }
+
+        return $this->expired_date->lte(today()->addDays($days));
     }
 }

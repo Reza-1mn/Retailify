@@ -53,7 +53,7 @@
                         </div>
 
                         <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-5">
-                            <h2 class="text-sm font-extrabold text-slate-900 border-b border-slate-100 pb-3">Harga &amp; Stok Inventori</h2>
+                            <h2 class="text-sm font-extrabold text-slate-900 border-b border-slate-100 pb-3">Harga, Stok &amp; Kadaluarsa</h2>
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
@@ -70,7 +70,7 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div>
                                     <label class="block text-xs font-bold text-slate-700 mb-1.5">Stok Awal <span class="text-rose-500">*</span></label>
                                     <input type="number" name="stock" value="{{ old('stock', 0) }}" min="0"
@@ -81,8 +81,15 @@
                                     <label class="block text-xs font-bold text-slate-700 mb-1.5">Batas Minimum Stok <span class="text-rose-500">*</span></label>
                                     <input type="number" name="min_stock" value="{{ old('min_stock', 5) }}" min="0"
                                            class="w-full px-4 py-2.5 bg-slate-50 border-slate-200 rounded-xl text-sm focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 transition" required>
-                                    <p class="text-[11px] text-slate-400 mt-1">Peringatan stok menipis muncul jika stok &le; nilai ini.</p>
+                                    <p class="text-[11px] text-slate-400 mt-1">Peringatan stok menipis jika stok &le; nilai ini.</p>
                                     @error('min_stock')<p class="text-rose-600 text-xs font-medium mt-1">{{ $message }}</p>@enderror
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Tanggal Kadaluarsa</label>
+                                    <input type="date" name="expired_date" value="{{ old('expired_date') }}"
+                                           class="w-full px-4 py-2.5 bg-slate-50 border-slate-200 rounded-xl text-sm focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 transition">
+                                    <p class="text-[11px] text-slate-400 mt-1">Kosongkan jika produk non-kadaluarsa.</p>
+                                    @error('expired_date')<p class="text-rose-600 text-xs font-medium mt-1">{{ $message }}</p>@enderror
                                 </div>
                             </div>
                         </div>
