@@ -25,14 +25,15 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'category_id' => 'required|exists:categories,id',
-            'sku'         => 'required|string|max:50|unique:products,sku',
-            'name'        => 'required|string|max:150',
-            'image'       => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'buy_price'   => 'required|numeric|min:0',
-            'sell_price'  => 'required|numeric|min:0',
-            'stock'       => 'required|integer|min:0',
-            'min_stock'   => 'required|integer|min:0',
+            'category_id'  => 'required|exists:categories,id',
+            'sku'          => 'required|string|max:50|unique:products,sku',
+            'name'         => 'required|string|max:150',
+            'image'        => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'buy_price'    => 'required|numeric|min:0',
+            'sell_price'   => 'required|numeric|min:0',
+            'stock'        => 'required|integer|min:0',
+            'min_stock'    => 'required|integer|min:0',
+            'expired_date' => 'nullable|date',
         ]);
 
         $validated['is_active'] = $request->boolean('is_active', true);
@@ -56,14 +57,15 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         $validated = $request->validate([
-            'category_id' => 'required|exists:categories,id',
-            'sku'         => 'required|string|max:50|unique:products,sku,' . $product->id,
-            'name'        => 'required|string|max:150',
-            'image'       => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'buy_price'   => 'required|numeric|min:0',
-            'sell_price'  => 'required|numeric|min:0',
-            'stock'       => 'required|integer|min:0',
-            'min_stock'   => 'required|integer|min:0',
+            'category_id'  => 'required|exists:categories,id',
+            'sku'          => 'required|string|max:50|unique:products,sku,' . $product->id,
+            'name'         => 'required|string|max:150',
+            'image'        => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'buy_price'    => 'required|numeric|min:0',
+            'sell_price'   => 'required|numeric|min:0',
+            'stock'        => 'required|integer|min:0',
+            'min_stock'    => 'required|integer|min:0',
+            'expired_date' => 'nullable|date',
         ]);
 
         $validated['is_active'] = $request->boolean('is_active');

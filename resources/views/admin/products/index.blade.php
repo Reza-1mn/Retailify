@@ -5,6 +5,7 @@
         $inactiveCount = $products->where('is_active', false)->count();
         $lowStockItems = $products->filter(fn($p) => $p->stock <= $p->min_stock);
         $noPhotoItems = $products->filter(fn($p) => empty($p->image));
+        $expiringItems = $products->filter(fn($p) => $p->isExpired() || $p->isNearExpiry(30));
     @endphp
 
     <div x-data="{
@@ -69,7 +70,7 @@
                     <h2 class="text-sm font-bold text-slate-800">Ringkasan Kondisi Katalog</h2>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <!-- Kartu 1: Low Stock -->
                     <button type="button" @click="tab = 'low_stock'"
                             class="text-left p-4 rounded-xl bg-slate-50/70 hover:bg-slate-100/70 border border-slate-200/80 transition group flex flex-col justify-between">
@@ -100,7 +101,27 @@
                         </div>
                     </button>
 
-                    <!-- Kartu 2: Lengkapi Foto Produk -->
+                    <!-- Kartu 2: Kadaluarsa / Mendekati Kadaluarsa -->
+                    <button type="button" @click="tab = 'expiring'"
+                            class="text-left p-4 rounded-xl bg-slate-50/70 hover:bg-slate-100/70 border border-slate-200/80 transition group flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm font-bold text-slate-900">Mendekati / Kadaluarsa</p>
+                                <span class="text-xs font-bold px-2.5 py-0.5 rounded-md border border-slate-200 bg-white {{ $expiringItems->count() > 0 ? 'text-amber-600' : 'text-slate-600' }}">
+                                    {{ $expiringItems->count() }} item
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1.5 line-clamp-2">Pantau produk yang sudah lewat atau akan kadaluarsa dalam 30 hari.</p>
+                        </div>
+                        <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-200/60">
+                            <span class="text-xs font-semibold {{ $expiringItems->count() > 0 ? 'text-amber-600' : 'text-slate-500' }}">
+                                {{ $expiringItems->count() > 0 ? 'Periksa tanggal kadaluarsa' : 'Tidak ada produk hampir kadaluarsa' }}
+                            </span>
+                            <span class="text-slate-400 group-hover:text-slate-700 text-sm font-bold">&rsaquo;</span>
+                        </div>
+                    </button>
+
+                    <!-- Kartu 3: Lengkapi Foto Produk -->
                     <button type="button" @click="tab = 'no_photo'"
                             class="text-left p-4 rounded-xl bg-slate-50/70 hover:bg-slate-100/70 border border-slate-200/80 transition group flex flex-col justify-between">
                         <div>
@@ -126,7 +147,7 @@
                         </div>
                     </button>
 
-                    <!-- Kartu 3: Produk Nonaktif -->
+                    <!-- Kartu 4: Produk Nonaktif -->
                     <button type="button" @click="tab = 'inactive'"
                             class="text-left p-4 rounded-xl bg-slate-50/70 hover:bg-slate-100/70 border border-slate-200/80 transition group flex flex-col justify-between">
                         <div>
@@ -173,6 +194,12 @@
                             :class="tab === 'low_stock' ? 'border-indigo-600 text-slate-900 font-extrabold' : 'border-transparent text-slate-500 hover:text-slate-800 font-semibold'"
                             class="pb-3.5 border-b-2 whitespace-nowrap transition">
                         Low Stock <span class="ml-1 text-xs text-slate-400 font-semibold">{{ $lowStockItems->count() }}</span>
+                    </button>
+
+                    <button type="button" @click="tab = 'expiring'"
+                            :class="tab === 'expiring' ? 'border-indigo-600 text-slate-900 font-extrabold' : 'border-transparent text-slate-500 hover:text-slate-800 font-semibold'"
+                            class="pb-3.5 border-b-2 whitespace-nowrap transition">
+                        Expiring / Expired <span class="ml-1 text-xs text-slate-400 font-semibold">{{ $expiringItems->count() }}</span>
                     </button>
                 </div>
 
@@ -243,6 +270,7 @@
                                 <th class="py-3.5 px-4">SKU</th>
                                 <th class="py-3.5 px-4">Stock</th>
                                 <th class="py-3.5 px-4">Price</th>
+                                <th class="py-3.5 px-4">Expired Date</th>
                                 <th class="py-3.5 px-4">Status</th>
                                 <th class="py-3.5 px-6 text-right">Action</th>
                             </tr>
@@ -252,13 +280,16 @@
                                 @php
                                     $isLow = $product->stock <= $product->min_stock;
                                     $hasNoPhoto = empty($product->image);
+                                    $isExpired = $product->isExpired();
+                                    $isNearExpiry = $product->isNearExpiry(30);
                                 @endphp
                                 <tr x-show="
                                         (tab === 'all' ||
                                          (tab === 'active' && {{ $product->is_active ? 'true' : 'false' }}) ||
                                          (tab === 'inactive' && {{ !$product->is_active ? 'true' : 'false' }}) ||
                                          (tab === 'low_stock' && {{ $isLow ? 'true' : 'false' }}) ||
-                                         (tab === 'no_photo' && {{ $hasNoPhoto ? 'true' : 'false' }})) &&
+                                         (tab === 'no_photo' && {{ $hasNoPhoto ? 'true' : 'false' }}) ||
+                                         (tab === 'expiring' && {{ ($isExpired || $isNearExpiry) ? 'true' : 'false' }})) &&
                                         (categoryFilter === 'all' || categoryFilter == '{{ $product->category_id }}') &&
                                         (search === '' || '{{ strtolower($product->sku . ' ' . $product->name) }}'.includes(search.toLowerCase()))
                                     "
@@ -309,6 +340,25 @@
                                         Rp {{ number_format($product->sell_price, 0, ',', '.') }}
                                     </td>
 
+                                    <td class="py-4 px-4">
+                                        @if($product->expired_date)
+                                            <p class="text-xs font-bold {{ $isExpired ? 'text-rose-600' : ($isNearExpiry ? 'text-amber-600' : 'text-slate-700') }}">
+                                                {{ $product->expired_date->format('d M Y') }}
+                                            </p>
+                                            @if($isExpired)
+                                                <span class="inline-block mt-0.5 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-rose-50 text-rose-600 border border-rose-200/70">
+                                                    Kadaluarsa
+                                                </span>
+                                            @elseif($isNearExpiry)
+                                                <span class="inline-block mt-0.5 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-amber-50 text-amber-700 border border-amber-200/70">
+                                                    &le; 30 Hari Lagi
+                                                </span>
+                                            @endif
+                                        @else
+                                            <span class="text-xs text-slate-400">—</span>
+                                        @endif
+                                    </td>
+
                                     <!-- Toggle Switch Active / Inactive -->
                                     <td class="py-4 px-4">
                                         <form action="{{ route('admin.products.toggle-status', $product) }}" method="POST" class="inline-flex items-center gap-2.5">
@@ -344,7 +394,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="py-16 text-center">
+                                    <td colspan="8" class="py-16 text-center">
                                         <p class="text-slate-600 font-semibold text-sm">Belum ada data produk</p>
                                         <p class="text-slate-400 text-xs mt-1">Klik <span class="text-indigo-600 font-semibold">+ Add Product</span> untuk menambahkan produk pertama.</p>
                                     </td>
