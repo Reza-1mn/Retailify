@@ -53,3 +53,65 @@ main .max-w-6xl {
     padding-left: 1.5rem !important;
     padding-right: 1.5rem !important;
 }
+
+/* =========================================================
+   2. PRINT STYLING (app.css)
+   ========================================================= */
+
+@media print {
+    @page {
+        size: auto;
+        margin: 8mm;
+    }
+
+    html,
+    body,
+    #pos-wrapper,
+    main {
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+        position: static !important;
+        background: #ffffff !important;
+    }
+
+    body * {
+        visibility: hidden !important;
+    }
+
+    #pos-print-root,
+    #pos-print-root * {
+        visibility: visible !important;
+    }
+
+    #pos-print-root {
+        display: block !important;
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: #ffffff !important;
+        overflow: visible !important;
+    }
+
+    #pos-receipt-card {
+        box-shadow: none !important;
+        border: 1px solid #e2e8f0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        overflow: visible !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    #pos-receipt-items {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+}

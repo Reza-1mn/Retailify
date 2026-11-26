@@ -1,39 +1,8 @@
-<style>
-    @media print {
-        @page {
-            size: auto;
-            margin: 8mm;
-        }
-        html, body, #pos-wrapper, main {
-            height: auto !important;
-            min-height: 0 !important;
-            overflow: visible !important;
-            position: static !important;
-        }
-        body > *:not(#pos-print-root) {
-            display: none !important;
-        }
-        #pos-print-root {
-            display: block !important;
-            position: static !important;
-            width: 100% !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            background: #ffffff !important;
-        }
-        #pos-receipt-card {
-            box-shadow: none !important;
-            border: 1px solid #e2e8f0 !important;
-            max-width: 100% !important;
-            width: 100% !important;
-            break-inside: avoid;
-            page-break-inside: avoid;
-        }
-        .no-print {
-            display: none !important;
-        }
-    }
-</style>
+@php
+    $receiptStoreName = Auth::user()->store_name
+        ?? \App\Models\User::where('role', 'admin')->whereNotNull('store_name')->value('store_name')
+        ?? 'Retailify';
+@endphp
 
 <div id="pos-print-root"
      x-show="showReceiptModal"
@@ -51,7 +20,8 @@
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                 Pembayaran Berhasil
             </span>
-            <h3 class="text-lg font-extrabold text-slate-900 tracking-tight">Retailify</h3>
+            <h3 class="text-lg font-extrabold text-slate-900 tracking-tight"
+                x-text="receipt.store_name || @js($receiptStoreName)"></h3>
             <p class="text-[11px] text-slate-400 mt-0.5">Struk Pembayaran Resmi</p>
 
             <div class="mt-4 pt-3 border-t border-slate-100 text-left space-y-1 text-xs">
@@ -75,7 +45,7 @@
         </div>
 
         <!-- Daftar Item -->
-        <div class="px-6 py-4 max-h-60 overflow-y-auto space-y-2.5 border-b border-dashed border-slate-200">
+        <div id="pos-receipt-items" class="px-6 py-4 max-h-60 overflow-y-auto space-y-2.5 border-b border-dashed border-slate-200">
             <template x-for="item in receipt.items" :key="item.product_id">
                 <div class="flex items-start justify-between text-xs gap-3">
                     <div class="min-w-0">

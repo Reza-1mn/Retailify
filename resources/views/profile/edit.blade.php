@@ -6,9 +6,16 @@
         </div>
     </x-slot>
 
+    @php
+        $initialTab = session('status') === 'store-updated' ? 'toko' : 'profil';
+        $adminStoreName = Auth::user()->store_name
+            ?? \App\Models\User::where('role', 'admin')->whereNotNull('store_name')->value('store_name')
+            ?? 'Retailify';
+    @endphp
+
     <div class="w-full p-5 sm:p-6 lg:p-8 space-y-6 bg-slate-50/70 min-h-[calc(100vh-4rem)]"
          x-data="{
-             activeTab: 'profil',
+             activeTab: @js($initialTab),
              autoFocusPosSearch: true,
              qrisExactAmount: true
          }">
@@ -60,8 +67,8 @@
             @endif
         </div>
 
-        <!-- TAB 1: PROFIL & KEAMANAN (Sesuai Alur Bawaan) -->
-        <div x-show="activeTab === 'profil'" class="space-y-6">
+        <!-- TAB 1: PROFIL & KEAMANAN -->
+        <div x-show="activeTab === 'profil'" style="display: none;" class="space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 <!-- Kolom Kiri: Informasi Profil -->
                 <div class="lg:col-span-6 rounded-2xl bg-white border border-slate-200/80 p-6 shadow-2xs space-y-5">
@@ -91,12 +98,18 @@
                             <label for="name" class="block text-xs font-bold text-slate-700 mb-1.5">Nama Lengkap</label>
                             <input id="name" name="name" type="text" value="{{ old('name', Auth::user()->name) }}" required
                                    class="w-full rounded-xl border-slate-200 bg-slate-50/60 focus:bg-white focus:border-indigo-600 focus:ring-indigo-600 text-sm">
+                            @error('name')
+                                <p class="text-rose-600 text-xs font-semibold mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div>
                             <label for="email" class="block text-xs font-bold text-slate-700 mb-1.5">Alamat Email</label>
                             <input id="email" name="email" type="email" value="{{ old('email', Auth::user()->email) }}" required
                                    class="w-full rounded-xl border-slate-200 bg-slate-50/60 focus:bg-white focus:border-indigo-600 focus:ring-indigo-600 text-sm">
+                            @error('email')
+                                <p class="text-rose-600 text-xs font-semibold mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div class="pt-1 flex items-center gap-3">
@@ -215,33 +228,55 @@
             <div x-show="activeTab === 'toko'" style="display: none;" class="w-full max-w-3xl rounded-2xl bg-white border border-slate-200/80 p-6 shadow-2xs space-y-5">
                 <div>
                     <h3 class="text-base font-extrabold text-slate-900">Profil Toko &amp; Pengaturan Struk</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">Informasi identitas toko yang tampil pada struk transaksi serta ambang batas stok minimum.</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Informasi identitas toko yang tampil di bagian atas struk transaksi tanpa mengubah nama akun admin/kasir.</p>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Nama Toko</label>
-                        <input type="text" value="Retailify" class="w-full rounded-xl border-slate-200 bg-slate-50/60 text-sm">
+                <form method="post" action="{{ route('profile.update') }}" class="space-y-4">
+                    @csrf
+                    @method('patch')
+                    <input type="hidden" name="update_section" value="store">
+                    <input type="hidden" name="name" value="{{ Auth::user()->name }}">
+                    <input type="hidden" name="email" value="{{ Auth::user()->email }}">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="store_name" class="block text-xs font-bold text-slate-700 mb-1.5">Nama Toko / Perusahaan</label>
+                            <input id="store_name" name="store_name" type="text"
+                                   value="{{ old('store_name', $adminStoreName) }}"
+                                   placeholder="Contoh: Retailify Mart"
+                                   class="w-full rounded-xl border-slate-200 bg-slate-50/60 focus:bg-white focus:border-indigo-600 focus:ring-indigo-600 text-sm">
+                            @error('store_name')
+                                <p class="text-rose-600 text-xs font-semibold mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label for="default_min_stock" class="block text-xs font-bold text-slate-700 mb-1.5">Batas Stok Minimum Default</label>
+                            <input id="default_min_stock" type="number" value="5" min="0"
+                                   class="w-full rounded-xl border-slate-200 bg-slate-50/60 text-sm">
+                        </div>
                     </div>
+
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Batas Stok Minimum Default</label>
-                        <input type="number" value="5" min="0" class="w-full rounded-xl border-slate-200 bg-slate-50/60 text-sm">
+                        <label for="store_address" class="block text-xs font-bold text-slate-700 mb-1.5">Alamat / Info Cabang (Struk)</label>
+                        <input id="store_address" type="text" placeholder="Contoh: Jl. Jenderal Sudirman, Kota Jambi"
+                               class="w-full rounded-xl border-slate-200 bg-slate-50/60 text-sm">
                     </div>
-                </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Alamat / Info Cabang (Struk)</label>
-                    <input type="text" placeholder="Contoh: Jl. Jenderal Sudirman, Kota Jambi" class="w-full rounded-xl border-slate-200 bg-slate-50/60 text-sm">
-                </div>
+                    <div>
+                        <label for="receipt_footer" class="block text-xs font-bold text-slate-700 mb-1.5">Catatan Penutup Struk</label>
+                        <input id="receipt_footer" type="text" value="Terima kasih telah berbelanja di {{ $adminStoreName }}."
+                               class="w-full rounded-xl border-slate-200 bg-slate-50/60 text-sm">
+                    </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Catatan Penutup Struk</label>
-                    <input type="text" value="Terima kasih telah berbelanja di Retailify." class="w-full rounded-xl border-slate-200 bg-slate-50/60 text-sm">
-                </div>
-
-                <p class="text-[11px] text-slate-400">
-                    Hubungkan ke tabel/model konfigurasi toko (`store_settings`) agar nilai ini tersimpan permanen di database.
-                </p>
+                    <div class="pt-1 flex items-center gap-3">
+                        <button type="submit" class="btn-primary-theme px-4 py-2.5 rounded-xl text-xs font-extrabold">
+                            Simpan Profil Toko
+                        </button>
+                        @if (session('status') === 'store-updated')
+                            <span class="text-xs font-bold text-emerald-600">Nama toko tersimpan.</span>
+                        @endif
+                    </div>
+                </form>
             </div>
 
             <!-- TAB 4: MANAJEMEN AKUN KASIR (KHUSUS ADMIN) -->

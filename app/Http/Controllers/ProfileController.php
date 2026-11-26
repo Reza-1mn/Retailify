@@ -7,8 +7,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
@@ -23,12 +23,25 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update the user's profile information.
+     * Update the user's profile or store settings.
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
-        $user->fill($request->safe()->except('avatar'));
+        $isStoreUpdate = $request->input('update_section') === 'store' && (($user->role ?? '') === 'admin');
+
+        if ($isStoreUpdate) {
+            $storeValidated = $request->validate([
+                'store_name' => ['nullable', 'string', 'max:120'],
+            ]);
+
+            $user->store_name = $storeValidated['store_name'] ?? null;
+            $user->save();
+
+            return Redirect::route('profile.edit')->with('status', 'store-updated');
+        }
+
+        $user->fill($request->safe()->except(['avatar', 'store_name', 'update_section']));
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
