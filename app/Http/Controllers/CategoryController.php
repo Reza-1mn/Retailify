@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CategoryIconHelper;
 use App\Models\Category;
 use Illuminate\Http\Request;
 
@@ -9,7 +10,8 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::latest()->get();
+        $categories = Category::withCount('products')->latest()->get();
+
         return view('admin.categories.index', compact('categories'));
     }
 
@@ -21,8 +23,14 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:100|unique:categories,name',
+            'name' => ['required', 'string', 'max:100', 'unique:categories,name'],
+            'icon' => ['nullable', 'string', 'in:auto,' . implode(',', array_keys(CategoryIconHelper::options()))],
         ]);
+
+        $validated['icon'] = CategoryIconHelper::resolve(
+            $validated['icon'] ?? 'auto',
+            $validated['name']
+        );
 
         Category::create($validated);
 
@@ -38,8 +46,14 @@ class CategoryController extends Controller
     public function update(Request $request, Category $category)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:100|unique:categories,name,' . $category->id,
+            'name' => ['required', 'string', 'max:100', 'unique:categories,name,' . $category->id],
+            'icon' => ['nullable', 'string', 'in:auto,' . implode(',', array_keys(CategoryIconHelper::options()))],
         ]);
+
+        $validated['icon'] = CategoryIconHelper::resolve(
+            $validated['icon'] ?? 'auto',
+            $validated['name']
+        );
 
         $category->update($validated);
 

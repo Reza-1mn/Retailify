@@ -52,22 +52,32 @@
                     </div>
                 </div>
 
-                <div class="flex items-center space-x-2.5 overflow-x-auto pb-1">
+                <!-- Category Pills (Langsung Terlihat Tanpa Scroll Samping) -->
+                <div class="flex flex-wrap items-center gap-2.5" x-data="{ showAllCats: true }">
                     <button type="button" @click="selectedCategory = 'all'"
                             :class="selectedCategory === 'all' ? 'border-indigo-600 bg-indigo-50/70 text-slate-900' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'"
-                            class="px-4 py-2.5 rounded-xl border text-left shrink-0 transition">
+                            class="px-3.5 py-2 rounded-xl border text-left transition">
                         <p class="text-xs font-bold">Semua Produk</p>
                         <p class="text-[11px] text-slate-400 mt-0.5" x-text="products.length + ' item'"></p>
                     </button>
 
-                    <template x-for="cat in categories" :key="cat.id">
-                        <button type="button" @click="selectedCategory = cat.id"
+                    <template x-for="(cat, idx) in categories" :key="cat.id">
+                        <button type="button"
+                                x-show="showAllCats || idx < 4 || selectedCategory === cat.id"
+                                @click="selectedCategory = cat.id"
                                 :class="selectedCategory === cat.id ? 'border-indigo-600 bg-indigo-50/70 text-slate-900' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'"
-                                class="px-4 py-2.5 rounded-xl border text-left shrink-0 transition">
+                                class="px-3.5 py-2 rounded-xl border text-left transition">
                             <p class="text-xs font-bold" x-text="cat.name"></p>
                             <p class="text-[11px] text-slate-400 mt-0.5" x-text="cat.products_count + ' item'"></p>
                         </button>
                     </template>
+
+                    <button type="button"
+                            x-show="categories.length > 4"
+                            @click="showAllCats = !showAllCats"
+                            class="px-3 py-2 rounded-xl border border-dashed border-slate-300 bg-slate-50/70 hover:bg-slate-100 text-[11px] font-bold text-slate-600 transition">
+                        <span x-text="showAllCats ? 'Ringkas' : '+' + (categories.length - 4) + ' lainnya'"></span>
+                    </button>
                 </div>
             </div>
 
@@ -380,8 +390,8 @@
 
                     const items = this.cart.map(i => ({ ...i }));
                     const total = this.totalAmount;
-                    const paid = this.paymentAmount;
                     const method = this.paymentMethod;
+                    const paid = method === 'qris' ? total : this.paymentAmount;
 
                     try {
                         const response = await fetch(checkoutUrl, {

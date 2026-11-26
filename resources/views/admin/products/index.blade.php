@@ -11,6 +11,7 @@
             tab: 'all',
             search: '',
             categoryFilter: 'all',
+            viewMode: 'list',
             selectedIds: [],
             allIds: {{ $products->pluck('id')->toJson() }},
             toggleAll() {
@@ -34,12 +35,12 @@
             <!-- Header Bar -->
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <div class="flex items-center gap-2 text-xs font-medium text-slate-400 mb-1">
+                    <div class="flex items-center gap-2 text-xs font-medium text-slate-400">
                         <span>Manajemen Toko</span>
                         <span>/</span>
-                        <span class="text-slate-700 font-semibold">Manage Products</span>
+                        <span class="text-indigo-600 font-semibold">Manage Products</span>
                     </div>
-                    <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Manage Products</h1>
+                    <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight mt-0.5">Manage Products</h1>
                 </div>
 
                 <div class="flex items-center gap-2.5">
@@ -146,7 +147,7 @@
                 </div>
             </div>
 
-            <!-- Container Utama: Tabs + Filter + Bulk Action + Tabel -->
+            <!-- Container Utama: Tabs + Filter + Bulk Action + Tabel / Grid -->
             <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
 
                 <!-- Tab Navigasi Status -->
@@ -193,8 +194,33 @@
                             @endforeach
                         </select>
 
+                        <!-- Toggle Gaya Drive: Memanjang (List) vs Kotak-Kotak (Grid) -->
+                        <div class="inline-flex items-center rounded-xl border border-slate-200 bg-slate-50 p-1 self-start md:self-auto shrink-0">
+                            <button type="button"
+                                    @click="viewMode = 'list'"
+                                    :class="viewMode === 'list' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-400 hover:text-slate-700'"
+                                    title="Tampilan Memanjang (Tabel)"
+                                    class="p-1.5 rounded-lg transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/>
+                                </svg>
+                            </button>
+                            <button type="button"
+                                    @click="viewMode = 'grid'"
+                                    :class="viewMode === 'grid' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-400 hover:text-slate-700'"
+                                    title="Tampilan Kotak-Kotak (Grid)"
+                                    class="p-1.5 rounded-lg transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+                                    <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+                                    <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+                                    <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+                                </svg>
+                            </button>
+                        </div>
+
                         <button type="button" @click="tab = 'all'; search = ''; categoryFilter = 'all'; selectedIds = []"
-                                class="px-4 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold transition">
+                                class="px-4 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold transition shrink-0">
                             Reset
                         </button>
                     </div>
@@ -211,6 +237,11 @@
                         <span class="text-xs font-bold text-slate-600 mr-1">
                             Selected: <strong class="text-slate-900" x-text="selectedIds.length"></strong>
                         </span>
+
+                        <button type="button" @click="toggleAll()"
+                                class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition">
+                            <span x-text="selectedIds.length === allIds.length && allIds.length > 0 ? 'Unselect All' : 'Select All'"></span>
+                        </button>
 
                         <button type="button" @click="submitBulk('activate')" :disabled="selectedIds.length === 0"
                                 class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-45 disabled:cursor-not-allowed transition">
@@ -229,8 +260,8 @@
                     </form>
                 </div>
 
-                <!-- Tabel Produk -->
-                <div class="overflow-x-auto">
+                <!-- MODE 1: MEMANJANG (TABEL PRODUK) -->
+                <div x-show="viewMode === 'list'" class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-slate-50 border-b border-slate-200/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
@@ -352,6 +383,105 @@
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+
+                <!-- MODE 2: KOTAK-KOTAK (GRID GAYA DRIVE) -->
+                <div x-show="viewMode === 'grid'" class="p-5 sm:p-6">
+                    @if($products->isEmpty())
+                        <div class="py-16 text-center">
+                            <p class="text-slate-600 font-semibold text-sm">Belum ada data produk</p>
+                            <p class="text-slate-400 text-xs mt-1">Klik <span class="text-indigo-600 font-semibold">+ Add Product</span> untuk menambahkan produk pertama.</p>
+                        </div>
+                    @else
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            @foreach($products as $product)
+                                @php
+                                    $isLow = $product->stock <= $product->min_stock;
+                                    $hasNoPhoto = empty($product->image);
+                                @endphp
+                                <div x-show="
+                                        (tab === 'all' ||
+                                         (tab === 'active' && {{ $product->is_active ? 'true' : 'false' }}) ||
+                                         (tab === 'inactive' && {{ !$product->is_active ? 'true' : 'false' }}) ||
+                                         (tab === 'low_stock' && {{ $isLow ? 'true' : 'false' }}) ||
+                                         (tab === 'no_photo' && {{ $hasNoPhoto ? 'true' : 'false' }})) &&
+                                        (categoryFilter === 'all' || categoryFilter == '{{ $product->category_id }}') &&
+                                        (search === '' || '{{ strtolower($product->sku . ' ' . $product->name) }}'.includes(search.toLowerCase()))
+                                     "
+                                     class="rounded-2xl border border-slate-200/80 bg-white hover:border-slate-300 p-4 flex flex-col justify-between gap-4 transition {{ !$product->is_active ? 'opacity-70' : '' }}">
+
+                                    <div class="space-y-3">
+                                        <div class="relative h-32 rounded-xl bg-slate-100 border border-slate-200/60 overflow-hidden flex items-center justify-center">
+                                            <input type="checkbox" value="{{ $product->id }}" x-model.number="selectedIds"
+                                                   class="absolute top-2.5 left-2.5 z-10 rounded border-slate-300 bg-white/90 text-indigo-600 focus:ring-indigo-500">
+
+                                            @if($product->image)
+                                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
+                                                     class="w-full h-full object-cover">
+                                            @else
+                                                <div class="w-12 h-12 rounded-xl bg-white text-slate-600 font-extrabold text-sm flex items-center justify-center uppercase border border-slate-200/80">
+                                                    {{ substr($product->name, 0, 2) }}
+                                                </div>
+                                            @endif
+                                        </div>
+
+                                        <div class="flex items-center justify-between gap-2">
+                                            <span class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-600 truncate">
+                                                {{ $product->category->name ?? 'Umum' }}
+                                            </span>
+                                            <span class="font-mono text-[11px] font-semibold text-slate-500 shrink-0">{{ $product->sku }}</span>
+                                        </div>
+
+                                        <div>
+                                            <p class="font-bold text-sm text-slate-900 line-clamp-1">{{ $product->name }}</p>
+                                            <p class="text-[11px] text-slate-400 mt-0.5">Modal: Rp {{ number_format($product->buy_price, 0, ',', '.') }}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="pt-3 border-t border-slate-100 space-y-2.5">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <span class="font-extrabold text-sm text-slate-900">
+                                                Rp {{ number_format($product->sell_price, 0, ',', '.') }}
+                                            </span>
+                                            <span class="text-xs font-bold {{ $isLow ? 'text-rose-600' : 'text-slate-700' }}">
+                                                {{ $product->stock }} <span class="font-normal text-slate-400">pcs</span>
+                                            </span>
+                                        </div>
+
+                                        <div class="flex items-center justify-between gap-2 pt-0.5">
+                                            <form action="{{ route('admin.products.toggle-status', $product) }}" method="POST" class="inline-flex items-center gap-2">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit"
+                                                        title="Klik untuk {{ $product->is_active ? 'menonaktifkan' : 'mengaktifkan' }} produk"
+                                                        class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out {{ $product->is_active ? 'bg-indigo-600' : 'bg-slate-300' }}">
+                                                    <span class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200 ease-in-out {{ $product->is_active ? 'translate-x-4' : 'translate-x-0' }}"></span>
+                                                </button>
+                                                <span class="text-[11px] font-semibold {{ $product->is_active ? 'text-slate-800' : 'text-slate-400' }}">
+                                                    {{ $product->is_active ? 'Active' : 'Inactive' }}
+                                                </span>
+                                            </form>
+
+                                            <div class="inline-flex items-center gap-1.5 text-xs font-bold">
+                                                <a href="{{ route('admin.products.edit', $product) }}"
+                                                   class="px-2 py-1 rounded-lg text-slate-700 hover:bg-slate-100 transition">
+                                                    Edit
+                                                </a>
+                                                <span class="text-slate-300">|</span>
+                                                <form action="{{ route('admin.products.destroy', $product) }}" method="POST" class="inline" onsubmit="return confirm('Hapus produk {{ $product->name }}?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn-danger-soft px-2 py-1 rounded-lg font-bold">
+                                                        Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
             </div>
 
