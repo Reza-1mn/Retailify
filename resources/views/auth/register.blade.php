@@ -1,10 +1,10 @@
 <x-guest-layout>
     <div class="text-center mb-7">
         <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Buat Akun Baru
+            Daftar Pemilik Toko
         </h1>
         <p class="text-sm text-slate-500 mt-1.5">
-            Daftarkan akun untuk mulai mengelola transaksi kasir dan stok.
+            Buat akun Admin untuk mengelola toko, stok, dan akun kasir Anda.
         </p>
     </div>
 
